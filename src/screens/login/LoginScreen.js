@@ -1,11 +1,6 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, TouchableOpacity, Image } from "react-native";
+import { TextInput, Button } from "react-native-paper";
 import {
   validateEmail,
   validateStudentNumber,
@@ -13,6 +8,8 @@ import {
   validatePassword,
 } from "../../shared";
 import LoginScreenStyles from "./LoginScreenStyles";
+import GlobalStyles from "../../shared/styles/global-styles";
+import ButtonStyles from "../../shared/styles/button-styles";
 
 const LoginScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({
@@ -43,6 +40,31 @@ const LoginScreen = ({ navigation }) => {
   };
 
   const handleTogglePassword = () => setShowPassword(!showPassword);
+
+  const toggleForm = () => {
+    setIsSignUp((prev) => !prev);
+    setFormStep(1);
+    setFormData({
+      email: "",
+      password: "",
+      reEnterPassword: "",
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      studentNumber: "",
+      phoneNumber: "",
+    });
+    setErrors({
+      email: "",
+      password: "",
+      reEnterPassword: "",
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      studentNumber: "",
+      phoneNumber: "",
+    });
+  };
 
   const handleFormSubmit = () => {
     let valid = true;
@@ -110,7 +132,16 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <View style={LoginScreenStyles.container}>
-      <Text style={LoginScreenStyles.title}>Mindful Mentor</Text>
+      <View style={LoginScreenStyles.header}>
+        <Image
+          source={require("../../assets/img/mindful-mentor-logo.png")}
+          style={LoginScreenStyles.logoImage}
+        />
+        <Text style={LoginScreenStyles.logoTitle}>Mindful Mentor</Text>
+        <Text style={LoginScreenStyles.title}>
+          {isSignUp ? "Create Account" : "Login"}
+        </Text>
+      </View>
 
       {isSignUp ? (
         <>
@@ -121,10 +152,15 @@ const LoginScreen = ({ navigation }) => {
           {formStep === 1 ? (
             <>
               <TextInput
-                placeholder="First Name"
-                style={LoginScreenStyles.input}
+                label="First Name"
+                mode="outlined"
+                outlineColor="#b4edd8"
+                activeOutlineColor="black"
+                outlineStyle={GlobalStyles.inputBorder}
+                style={GlobalStyles.input}
                 value={formData.firstName}
                 onChangeText={(text) => handleChange("firstName", text)}
+                error={!!errors.firstName}
               />
               {errors.firstName && (
                 <Text style={LoginScreenStyles.errorText}>
@@ -133,16 +169,26 @@ const LoginScreen = ({ navigation }) => {
               )}
 
               <TextInput
-                placeholder="Middle Name"
-                style={LoginScreenStyles.input}
+                label="Middle Name"
+                mode="outlined"
+                outlineColor="#b4edd8"
+                activeOutlineColor="black"
+                outlineStyle={GlobalStyles.inputBorder}
+                style={GlobalStyles.input}
                 value={formData.middleName}
                 onChangeText={(text) => handleChange("middleName", text)}
               />
+
               <TextInput
-                placeholder="Last Name"
-                style={LoginScreenStyles.input}
+                label="Last Name"
+                mode="outlined"
+                outlineColor="#b4edd8"
+                activeOutlineColor="black"
+                outlineStyle={GlobalStyles.inputBorder}
+                style={GlobalStyles.input}
                 value={formData.lastName}
                 onChangeText={(text) => handleChange("lastName", text)}
+                error={!!errors.lastName}
               />
               {errors.lastName && (
                 <Text style={LoginScreenStyles.errorText}>
@@ -151,10 +197,15 @@ const LoginScreen = ({ navigation }) => {
               )}
 
               <TextInput
-                placeholder="Student Number"
-                style={LoginScreenStyles.input}
+                label="Student Number"
+                mode="outlined"
+                outlineColor="#b4edd8"
+                activeOutlineColor="black"
+                outlineStyle={GlobalStyles.inputBorder}
+                style={GlobalStyles.input}
                 value={formData.studentNumber}
                 onChangeText={(text) => handleChange("studentNumber", text)}
+                error={!!errors.studentNumber}
               />
               {errors.studentNumber && (
                 <Text style={LoginScreenStyles.errorText}>
@@ -163,10 +214,15 @@ const LoginScreen = ({ navigation }) => {
               )}
 
               <TextInput
-                placeholder="Phone Number"
-                style={LoginScreenStyles.input}
+                label="Phone Number"
+                mode="outlined"
+                outlineColor="#b4edd8"
+                activeOutlineColor="black"
+                outlineStyle={GlobalStyles.inputBorder}
+                style={GlobalStyles.input}
                 value={formData.phoneNumber}
                 onChangeText={(text) => handleChange("phoneNumber", text)}
+                error={!!errors.phoneNumber}
               />
               {errors.phoneNumber && (
                 <Text style={LoginScreenStyles.errorText}>
@@ -177,84 +233,115 @@ const LoginScreen = ({ navigation }) => {
           ) : (
             <>
               <TextInput
-                placeholder="Email"
-                style={LoginScreenStyles.input}
+                label="Email"
+                mode="outlined"
+                outlineColor="#b4edd8"
+                activeOutlineColor="black"
+                outlineStyle={GlobalStyles.inputBorder}
+                style={GlobalStyles.input}
                 value={formData.email}
                 onChangeText={(text) => handleChange("email", text)}
+                error={!!errors.email}
               />
               {errors.email && (
                 <Text style={LoginScreenStyles.errorText}>{errors.email}</Text>
               )}
 
               <TextInput
-                placeholder="Password"
-                style={LoginScreenStyles.input}
+                label="Password"
+                mode="outlined"
+                outlineColor="#b4edd8"
+                activeOutlineColor="black"
+                outlineStyle={GlobalStyles.inputBorder}
+                style={GlobalStyles.input}
                 value={formData.password}
                 secureTextEntry={!showPassword}
+                right={
+                  <TextInput.Icon icon="eye" onPress={handleTogglePassword} />
+                }
                 onChangeText={(text) => handleChange("password", text)}
+                error={!!errors.password}
               />
+
               <TextInput
-                placeholder="Re-enter Password"
-                style={LoginScreenStyles.input}
+                label="Re-enter Password"
+                mode="outlined"
+                outlineColor="#b4edd8"
+                activeOutlineColor="black"
+                outlineStyle={GlobalStyles.inputBorder}
+                style={GlobalStyles.input}
                 value={formData.reEnterPassword}
                 secureTextEntry={!showPassword}
                 onChangeText={(text) => handleChange("reEnterPassword", text)}
+                error={!!errors.reEnterPassword}
               />
               {errors.reEnterPassword && (
                 <Text style={LoginScreenStyles.errorText}>
                   {errors.reEnterPassword}
                 </Text>
               )}
-
-              <TouchableOpacity onPress={handleTogglePassword}>
-                <Text>{showPassword ? "Hide Password" : "Show Password"}</Text>
-              </TouchableOpacity>
             </>
           )}
         </>
       ) : (
         <>
           <TextInput
-            placeholder="Email"
-            style={LoginScreenStyles.input}
+            label="Email"
+            mode="outlined"
+            outlineColor="#b4edd8"
+            activeOutlineColor="black"
+            outlineStyle={GlobalStyles.inputBorder}
+            style={GlobalStyles.input}
             value={formData.email}
             onChangeText={(text) => handleChange("email", text)}
+            error={!!errors.email}
           />
           {errors.email && (
-            <Text style={LoginScreenStyles.errorText}>{errors.email}</Text>
+            <Text style={GlobalStyles.errorText}>{errors.email}</Text>
           )}
 
           <TextInput
-            placeholder="Password"
-            style={LoginScreenStyles.input}
+            label="Password"
+            mode="outlined"
+            outlineColor="#b4edd8"
+            activeOutlineColor="black"
+            outlineStyle={GlobalStyles.inputBorder}
+            style={GlobalStyles.input}
             value={formData.password}
             secureTextEntry={!showPassword}
+            right={<TextInput.Icon icon="eye" onPress={handleTogglePassword} />}
             onChangeText={(text) => handleChange("password", text)}
+            error={!!errors.password}
           />
           {errors.password && (
-            <Text style={LoginScreenStyles.errorText}>{errors.password}</Text>
+            <Text style={GlobalStyles.errorText}>{errors.password}</Text>
           )}
-
-          <TouchableOpacity onPress={handleTogglePassword}>
-            <Text>{showPassword ? "Hide Password" : "Show Password"}</Text>
-          </TouchableOpacity>
         </>
       )}
 
-      <Button
-        title={
-          isSignUp && formStep === 1 ? "Next" : isSignUp ? "Sign Up" : "Login"
-        }
-        onPress={handleFormSubmit}
-      />
+      <View style={ButtonStyles.buttonContainerColumn}>
+        <Button
+          mode="contained"
+          onPress={handleFormSubmit}
+          style={ButtonStyles.primaryButton}
+          rippleColor="#769f90"
+          textColor="black"
+        >
+          {isSignUp && formStep === 1 ? "Next" : isSignUp ? "Sign Up" : "Login"}
+        </Button>
 
-      <TouchableOpacity onPress={() => setIsSignUp(!isSignUp)}>
-        <Text style={LoginScreenStyles.switchText}>
-          {isSignUp
-            ? "Already have an account? Login"
-            : "New here? Get Started"}
-        </Text>
-      </TouchableOpacity>
+        <Button
+          mode="contained"
+          onPress={toggleForm}
+          style={ButtonStyles.secondaryButton}
+          rippleColor="#5b5959"
+        >
+          {isSignUp ? "Back to Sign In" : "Sign Up"}
+        </Button>
+      </View>
+      <Text style={LoginScreenStyles.switchText}>
+        {isSignUp ? "Already have an account?" : "Don't have an account?"}
+      </Text>
     </View>
   );
 };
