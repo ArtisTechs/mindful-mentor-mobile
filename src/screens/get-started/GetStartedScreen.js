@@ -8,6 +8,15 @@ import {
   FlatList,
 } from "react-native";
 import GetStartedScreenStyle from "./GetStartedScreenStyles";
+import {
+  ESuccessMessages,
+  getUserDetails,
+  RoleEnum,
+  STORAGE_KEY,
+  toastService,
+  useGlobalContext,
+} from "../../shared";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const { width: viewportWidth } = Dimensions.get("window");
 
@@ -47,13 +56,48 @@ const CarouselItem = React.memo(({ item }) => (
   </View>
 ));
 
-const GetStartedScreen = ({ navigation }) => {
+const GetStartedScreen = ({
+  navigation,
+  setFullLoadingHandler,
+  onLoginSuccess,
+  handleLogout,
+}) => {
+  const {
+    currentUserDetails,
+    setCurrentUserDetails,
+    setIsAppAdmin,
+    setAdminMessages,
+    setIsMessagesFetch,
+  } = useGlobalContext();
   const flatListRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
   // Create a large array for looping effect
   const infiniteData = [...carouselItems, ...carouselItems, ...carouselItems];
   const centerIndex = carouselItems.length;
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const profileID = await AsyncStorage.getItem(STORAGE_KEY.PROFILE_ID);
+        const role = await AsyncStorage.getItem(STORAGE_KEY.ROLE);
+        console.log("profileID", profileID);
+
+        if (profileID) {
+          setIsAppAdmin(role === RoleEnum.COUNSELOR);
+
+          const storedProfile = await getUserDetails(profileID);
+          onLoginSuccess(storedProfile);
+        }
+      } catch (error) {
+        console.error("Error fetching user details", error);
+      } finally {
+        setFullLoadingHandler(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
 
   useEffect(() => {
     flatListRef.current.scrollToIndex({ index: centerIndex, animated: false });

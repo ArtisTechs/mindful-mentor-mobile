@@ -1,4 +1,5 @@
 import { STORAGE_KEY } from "../keys";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const getTokenAsync = async () => {
   try {
@@ -51,7 +52,11 @@ export const validatePassword = (password) => {
 // Toast service
 class ToastService {
   constructor() {
+    if (ToastService.instance) {
+      return ToastService.instance; // Singleton pattern
+    }
     this.showToastCallback = null;
+    ToastService.instance = this;
   }
 
   registerShowToastCallback(callback) {
@@ -59,8 +64,18 @@ class ToastService {
   }
 
   show(message, variant = "success") {
+    const validVariants = ["success", "error", "info"];
+    if (!validVariants.includes(variant)) {
+      console.warn(
+        `Invalid toast variant: "${variant}". Defaulting to "success".`
+      );
+      variant = "success"; // Default to "success" if the variant is invalid
+    }
+
     if (this.showToastCallback) {
       this.showToastCallback(message, variant);
+    } else {
+      console.warn("No toast callback registered.");
     }
   }
 }
@@ -85,27 +100,20 @@ export function stringToColor(string) {
 }
 
 export function stringAvatar(firstName, lastName, size, fontSize) {
-  // Extract the first word of the firstName and lastName
   const firstNameFirstWord = (firstName || "").split(" ")[0];
   const lastNameFirstWord = (lastName || "").split(" ")[0];
 
-  // Combine first and last names to create the name string
-  const name = `${firstNameFirstWord || ""} ${lastNameFirstWord || ""}`.trim();
+  const name = `${firstNameFirstWord} ${lastNameFirstWord}`.trim();
 
-  // Generate initials from the first letters of the first words
-  const initials = `${
-    firstNameFirstWord ? firstNameFirstWord[0].toUpperCase() : ""
-  }${lastNameFirstWord ? lastNameFirstWord[0].toUpperCase() : ""}`;
+  const initials =
+    `${firstNameFirstWord ? firstNameFirstWord[0].toUpperCase() : ""}${
+      lastNameFirstWord ? lastNameFirstWord[0].toUpperCase() : ""
+    }` || "N/A";
 
   return {
-    sx: {
-      bgcolor: stringToColor(name),
-      width: size,
-      height: size,
-      fontSize: fontSize,
-    },
-    children: initials || "N/A",
-    alt: `${firstName || ""} ${lastName || ""}`,
+    label: initials,
+    backgroundColor: stringToColor(name),
+    alt: `${firstName || "Unknown"} ${lastName || "User"}`,
   };
 }
 

@@ -1,11 +1,23 @@
 import { StyleSheet } from "react-native";
 
 const DashboardScreenStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
+  scrollContainer: {
+    flexGrow: 1,
+    backgroundColor: "#fff",
+    padding: 2,
+    justifyContent: "flex-start",
     alignItems: "center",
-    backgroundColor: "#f0f0f0",
+    flexDirection: "column",
+  },
+  emotionPickerContainer: {
+    width: "100%",
+    marginBottom: 16,
+  },
+  homePageCards: {
+    width: "95%",
+    padding: 5,
+    alignItems: "center",
+    gap: 20,
   },
   title: {
     fontSize: 24,

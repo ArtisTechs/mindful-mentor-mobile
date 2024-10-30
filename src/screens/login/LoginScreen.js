@@ -6,12 +6,19 @@ import {
   validateStudentNumber,
   validatePhoneNumber,
   validatePassword,
+  ESuccessMessages,
+  EErrorMessages,
+  userSignUp,
+  toastService,
+  userSignIn,
+  capitalizeText,
+  RoleEnum,
 } from "../../shared";
 import LoginScreenStyles from "./LoginScreenStyles";
 import GlobalStyles from "../../shared/styles/global-styles";
 import ButtonStyles from "../../shared/styles/button-styles";
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = ({ navigation, setFullLoadingHandler, onLoginSuccess }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -66,66 +73,166 @@ const LoginScreen = ({ navigation }) => {
     });
   };
 
-  const handleFormSubmit = () => {
-    let valid = true;
-    let validationErrors = {};
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    setFullLoadingHandler(true);
 
-    // Form validation logic goes here based on `formStep` and `isSignUp`
+    let formIsValid = true;
+    let newErrors = {
+      email: "",
+      password: "",
+      reEnterPassword: "",
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      studentNumber: "",
+      phoneNumber: "",
+    };
+
     if (isSignUp) {
       if (formStep === 1) {
-        // First step validation
+        // Step 1 validation
         if (!formData.firstName) {
-          validationErrors.firstName = "First Name is required";
-          valid = false;
+          newErrors.firstName = EErrorMessages.FIRST_NAME_REQUIRED;
+          formIsValid = false;
         }
         if (!formData.lastName) {
-          validationErrors.lastName = "Last Name is required";
-          valid = false;
+          newErrors.lastName = EErrorMessages.LAST_NAME_REQUIRED;
+          formIsValid = false;
         }
-        if (!validateStudentNumber(formData.studentNumber)) {
-          validationErrors.studentNumber = "Invalid Student Number";
-          valid = false;
+        if (!formData.studentNumber) {
+          newErrors.studentNumber = EErrorMessages.STUDENT_NUMBER_REQUIRED;
+          formIsValid = false;
+        } else if (!validateStudentNumber(formData.studentNumber)) {
+          newErrors.studentNumber = EErrorMessages.STUDENT_NUMBER_INVALID;
+          formIsValid = false;
         }
-        if (!validatePhoneNumber(formData.phoneNumber)) {
-          validationErrors.phoneNumber = "Invalid Phone Number";
-          valid = false;
+        if (!formData.phoneNumber) {
+          newErrors.phoneNumber = EErrorMessages.PHONE_NUMBER_REQUIRED;
+          formIsValid = false;
+        } else if (!validatePhoneNumber(formData.phoneNumber)) {
+          newErrors.phoneNumber = EErrorMessages.PHONE_NUMBER_INVALID;
+          formIsValid = false;
         }
-      } else {
-        // Second step validation
-        if (!validateEmail(formData.email)) {
-          validationErrors.email = "Invalid Email";
-          valid = false;
+      } else if (formStep === 2) {
+        // Step 2 validation
+        if (!formData.email) {
+          newErrors.email = EErrorMessages.EMAIL_REQUIRED;
+          formIsValid = false;
+        } else if (!validateEmail(formData.email)) {
+          newErrors.email = EErrorMessages.EMAIL_INVALID;
+          formIsValid = false;
         }
-        if (!validatePassword(formData.password)) {
-          validationErrors.password = "Invalid Password";
-          valid = false;
+        if (!formData.password) {
+          newErrors.password = EErrorMessages.PASSWORD_REQUIRED;
+          formIsValid = false;
         }
         if (formData.password !== formData.reEnterPassword) {
-          validationErrors.reEnterPassword = "Passwords do not match";
-          valid = false;
+          newErrors.reEnterPassword = EErrorMessages.PASSWORD_NOT_MATCH;
+          formIsValid = false;
+        }
+        const passwordError = validatePassword(formData.password);
+        if (passwordError) {
+          newErrors.password = passwordError;
+          formIsValid = false;
         }
       }
-    } else {
-      // Login validation
-      if (!validateEmail(formData.email)) {
-        validationErrors.email = "Invalid Email";
-        valid = false;
-      }
-      if (!formData.password) {
-        validationErrors.password = "Password is required";
-        valid = false;
-      }
-    }
 
-    setErrors(validationErrors);
-    if (valid) {
-      if (isSignUp && formStep === 1) {
-        setFormStep(2); // Move to step 2
+      if (formIsValid) {
+        if (formStep === 1) {
+          setFormStep(2);
+          setFullLoadingHandler(false);
+        } else {
+          setTimeout(async () => {
+            try {
+              const userDetails = {
+                firstName: capitalizeText(formData.firstName),
+                middleName: capitalizeText(formData.middleName),
+                lastName: capitalizeText(formData.lastName),
+                email: formData.email,
+                password: formData.password,
+                phoneNumber: formData.phoneNumber,
+                studentNumber: formData.studentNumber,
+                role: RoleEnum.STUDENT,
+              };
+              const user = await userSignUp(userDetails);
+
+              toggleForm();
+              toastService.show(ESuccessMessages.REGISTER, "success");
+              setFullLoadingHandler(false);
+            } catch (error) {
+              console.log(error);
+              if (error.errorCode === "EMAIL_ALREADY_REGISTERED") {
+                newErrors.email = error.message;
+                setErrors(newErrors);
+              } else if (
+                error.errorCode === "STUDENT_NUMBER_ALREADY_REGISTERED"
+              ) {
+                newErrors.studentNumber = error.message;
+                setErrors(newErrors);
+                setFormStep(1);
+              } else {
+                toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
+              }
+              setFullLoadingHandler(false);
+            }
+
+            setFullLoadingHandler(false);
+          }, 500);
+        }
       } else {
-        // Submit form or authenticate
-        alert(
-          isSignUp ? "Account created successfully" : "Logged in successfully"
-        );
+        setErrors(newErrors);
+        setFullLoadingHandler(false);
+      }
+    } else {
+      // Handle Sign In submission
+      if (!formData.email) {
+        newErrors.email = EErrorMessages.EMAIL_REQUIRED;
+        formIsValid = false;
+      } else if (!validateEmail(formData.email)) {
+        newErrors.email = EErrorMessages.EMAIL_INVALID;
+        formIsValid = false;
+      }
+
+      if (!formData.password) {
+        newErrors.password = EErrorMessages.PASSWORD_REQUIRED;
+        formIsValid = false;
+      }
+
+      if (formIsValid) {
+        setTimeout(async () => {
+          try {
+            const userDetails = {
+              email: formData.email,
+              password: formData.password,
+            };
+            const user = await userSignIn(userDetails);
+            toastService.show(ESuccessMessages.LOGIN, "success");
+            onLoginSuccess(user);
+            setFullLoadingHandler(false);
+          } catch (error) {
+            if (error.errorCode === "EMAIL_NOT_REGISTERED") {
+              newErrors.email = EErrorMessages.EMAIL_UNREGISTERED;
+              setErrors(newErrors);
+            } else if (error.errorCode === "WRONG_PASSWORD") {
+              newErrors.password = EErrorMessages.PASSWORD_INCORRECT;
+              setErrors(newErrors);
+            } else if (
+              error.message ===
+              "User account is not active. Wait for the counselor for approval."
+            ) {
+              toastService.show(error.message, "error");
+            } else {
+              toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
+            }
+            setFullLoadingHandler(false);
+          }
+
+          setFullLoadingHandler(false);
+        }, 500);
+      } else {
+        setErrors(newErrors);
+        setFullLoadingHandler(false);
       }
     }
   };

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { API_URL, RoleEnum } from "../enum";
 import { capitalizeText, getTokenAsync } from "./global-services";
+import { Platform } from "react-native";
 
 const usersURL = `${API_URL.BASE_URL}${API_URL.USERS}`;
 
@@ -60,13 +61,15 @@ export const saveUserProfile = async (userId, profileData) => {
     formData.append("phoneNumber", profileData.phoneNumber || "");
     formData.append("studentNumber", profileData.studentNumber);
 
-    // Handle profile picture differently for React Native
+    // Handle the profile picture if it exists
     if (profileData.profilePicture) {
-      // React Native requires a specific structure for the file upload
+      const fileName = profileData.profilePicture.fileName || "photo.jpg"; // Default name if fileName is not provided
+      const type = profileData.profilePicture.type || "image/jpeg"; // Default type if type is not provided
+
       formData.append("profilePicture", {
-        uri: profileData.profilePicture.uri, // Make sure this is the correct URI from the image picker
-        type: profileData.profilePicture.type, // e.g., "image/jpeg"
-        name: profileData.profilePicture.name || "profile.jpg", // Default name if not provided
+        uri: profileData.profilePicture.uri, // Use 'uri' for React Native
+        name: fileName,
+        type,
       });
     }
 
@@ -183,9 +186,9 @@ export const fetchCounselorList = async ({
 // Load Cloudinary credentials from the environment variables
 const CLOUDINARY_URL =
   "https://api.cloudinary.com/v1_1/" +
-  process.env.CLOUDINARY_CLOUD_NAME + // Use your cloud name directly or import from a config
+  process.env.CLOUDINARY_CLOUD_NAME + // Adjusted for React Native, you may want to set these variables manually
   "/image/upload";
-const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET; // Ensure this is available in your environment
+const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET;
 
 // Function for uploading a profile picture to Cloudinary
 export const uploadProfilePicture = async (profilePicture) => {
@@ -193,11 +196,11 @@ export const uploadProfilePicture = async (profilePicture) => {
     const formData = new FormData();
 
     // Append the profile picture file
-    if (profilePicture) {
+    if (profilePicture && profilePicture.uri) {
       formData.append("file", {
-        uri: profilePicture.uri, // Use the correct URI from the image picker
-        type: profilePicture.type, // e.g., "image/jpeg"
-        name: profilePicture.name || "profile.jpg", // Default name if not provided
+        uri: profilePicture.uri,
+        name: profilePicture.fileName || "photo.jpg", // Default name if fileName is not provided
+        type: profilePicture.type || "image/jpeg", // Default type if type is not provided
       });
       formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
     }
