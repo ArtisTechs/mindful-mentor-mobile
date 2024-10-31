@@ -111,7 +111,9 @@ export function stringAvatar(firstName, lastName, size, fontSize) {
     }` || "N/A";
 
   return {
-    label: initials,
+    label: initials || "UU",
+    size: size,
+    color: "white",
     backgroundColor: stringToColor(name),
     alt: `${firstName || "Unknown"} ${lastName || "User"}`,
   };

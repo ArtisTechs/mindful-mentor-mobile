@@ -13,12 +13,13 @@ import {
   userSignIn,
   capitalizeText,
   RoleEnum,
+  loadingService,
 } from "../../shared";
 import LoginScreenStyles from "./LoginScreenStyles";
 import GlobalStyles from "../../shared/styles/global-styles";
 import ButtonStyles from "../../shared/styles/button-styles";
 
-const LoginScreen = ({ navigation, setFullLoadingHandler, onLoginSuccess }) => {
+const LoginScreen = ({ navigation, onLoginSuccess }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -75,7 +76,7 @@ const LoginScreen = ({ navigation, setFullLoadingHandler, onLoginSuccess }) => {
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    setFullLoadingHandler(true);
+    loadingService.show();
 
     let formIsValid = true;
     let newErrors = {
@@ -141,7 +142,7 @@ const LoginScreen = ({ navigation, setFullLoadingHandler, onLoginSuccess }) => {
       if (formIsValid) {
         if (formStep === 1) {
           setFormStep(2);
-          setFullLoadingHandler(false);
+          loadingService.hide();
         } else {
           setTimeout(async () => {
             try {
@@ -159,7 +160,7 @@ const LoginScreen = ({ navigation, setFullLoadingHandler, onLoginSuccess }) => {
 
               toggleForm();
               toastService.show(ESuccessMessages.REGISTER, "success");
-              setFullLoadingHandler(false);
+              loadingService.hide();
             } catch (error) {
               console.log(error);
               if (error.errorCode === "EMAIL_ALREADY_REGISTERED") {
@@ -174,15 +175,15 @@ const LoginScreen = ({ navigation, setFullLoadingHandler, onLoginSuccess }) => {
               } else {
                 toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
               }
-              setFullLoadingHandler(false);
+              loadingService.hide();
             }
 
-            setFullLoadingHandler(false);
+            loadingService.hide();
           }, 500);
         }
       } else {
         setErrors(newErrors);
-        setFullLoadingHandler(false);
+        loadingService.hide();
       }
     } else {
       // Handle Sign In submission
@@ -209,7 +210,7 @@ const LoginScreen = ({ navigation, setFullLoadingHandler, onLoginSuccess }) => {
             const user = await userSignIn(userDetails);
             toastService.show(ESuccessMessages.LOGIN, "success");
             onLoginSuccess(user);
-            setFullLoadingHandler(false);
+            loadingService.hide();
           } catch (error) {
             if (error.errorCode === "EMAIL_NOT_REGISTERED") {
               newErrors.email = EErrorMessages.EMAIL_UNREGISTERED;
@@ -225,14 +226,14 @@ const LoginScreen = ({ navigation, setFullLoadingHandler, onLoginSuccess }) => {
             } else {
               toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
             }
-            setFullLoadingHandler(false);
+            loadingService.hide();
           }
 
-          setFullLoadingHandler(false);
+          loadingService.hide();
         }, 500);
       } else {
         setErrors(newErrors);
-        setFullLoadingHandler(false);
+        loadingService.hide();
       }
     }
   };

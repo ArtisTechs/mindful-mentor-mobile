@@ -7,10 +7,11 @@ import StudentList from "../../components/listing/student-list/StudentList";
 import {
   fetchAppointmentList,
   getStudentsWithMoodToday,
+  loadingService,
   useGlobalContext,
 } from "../../shared";
 
-const DashboardScreen = ({ setFullLoadingHandler }) => {
+const DashboardScreen = () => {
   const { currentUserDetails, isAppAdmin } = useGlobalContext();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,6 +23,7 @@ const DashboardScreen = ({ setFullLoadingHandler }) => {
 
     const loadData = async () => {
       if (currentUserDetails) {
+        loadingService.show();
         await loadAppointments();
         if (isAppAdmin) {
           console.log("isAppAdmin", isAppAdmin);
@@ -38,7 +40,7 @@ const DashboardScreen = ({ setFullLoadingHandler }) => {
     loadData();
 
     return () => {
-      isMounted = false; 
+      isMounted = false;
     };
   }, [currentUserDetails, isAppAdmin]);
   const loadAppointments = async () => {
@@ -66,6 +68,7 @@ const DashboardScreen = ({ setFullLoadingHandler }) => {
       console.error("Error fetching appointments:", error);
     } finally {
       setLoading(false);
+      loadingService.hide();
     }
   };
 
@@ -84,6 +87,7 @@ const DashboardScreen = ({ setFullLoadingHandler }) => {
       console.error("Error fetching students:", error);
     } finally {
       setStudentLoading(false);
+      loadingService.hide();
     }
   };
 
@@ -96,11 +100,7 @@ const DashboardScreen = ({ setFullLoadingHandler }) => {
       )}
 
       <View style={DashboardScreenStyles.homePageCards}>
-        <UpcomingEvents
-          appointments={appointments}
-          isAppAdmin={isAppAdmin}
-          setFullLoadingHandler={setFullLoadingHandler}
-        />
+        <UpcomingEvents appointments={appointments} isAppAdmin={isAppAdmin} />
         {isAppAdmin && (
           <StudentList
             students={students}

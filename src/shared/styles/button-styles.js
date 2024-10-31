@@ -15,6 +15,11 @@ const ButtonStyles = StyleSheet.create({
     height: 42,
     width: 200,
     borderRadius: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
     shadowRadius: 10,
   },
   secondaryButtonText: {
@@ -36,7 +41,7 @@ const ButtonStyles = StyleSheet.create({
   whiteButton: {
     backgroundColor: "white",
     height: 42,
-    width: 150,
+    width: 200,
     borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
@@ -59,6 +64,7 @@ const ButtonStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 20,
+    marginBottom: 10,
   },
   buttonContainerColumn: {
     flexDirection: "column",

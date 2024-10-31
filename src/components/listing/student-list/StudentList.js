@@ -131,17 +131,19 @@ const StudentList = ({
               onPress={() => handleItemClick(student)}
             >
               <View style={styles.studentInfo}>
-                {student.profilePicture ? (
+                {student.profilePicture &&
+                student.profilePicture !== "undefined" ? (
                   <Avatar.Image
                     source={{ uri: student.profilePicture }}
                     style={styles.avatar}
+                    size={60}
                   />
                 ) : (
                   <Avatar.Text
                     {...stringAvatar(
                       student.firstName,
                       student.lastName,
-                      20,
+                      60,
                       12
                     )}
                     style={styles.avatar}

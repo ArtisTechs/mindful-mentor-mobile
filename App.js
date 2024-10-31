@@ -18,6 +18,8 @@ import GetStartedScreen from "./src/screens/get-started/GetStartedScreen";
 import Toast from "react-native-toast-message";
 import {
   getUserDetails,
+  LoaderProvider,
+  ModalProvider,
   RoleEnum,
   STORAGE_KEY,
   toastService,
@@ -26,6 +28,7 @@ import FullLoaderComponent from "./src/components/full-loading-screen/FullLoader
 import CustomDrawerContent from "./src/components/menu/CustomDrawerContent";
 import theme from "./src/shared/styles/theme";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import ProfileScreen from "./src/screens/profile/ProfileScreen";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -46,13 +49,16 @@ const navigationTheme = {
 export default function App() {
   return (
     <GlobalStateProvider>
-      <AppContent />
+      <LoaderProvider>
+        <ModalProvider>
+          <AppContent />
+        </ModalProvider>
+      </LoaderProvider>
     </GlobalStateProvider>
   );
 }
 
 function AppContent() {
-  const [isLoading, setIsLoading] = useState(true);
   const [loggedIn, setLoggedIn] = useState(false);
   const [drawerTitle, setDrawerTitle] = useState("Dashboard");
   const { currentUserDetails, setCurrentUserDetails, setIsAppAdmin } =
@@ -147,7 +153,7 @@ function AppContent() {
       >
         <Tab.Screen name="DashboardTab" options={{ title: "Dashboard" }}>
           {(props) => (
-            <DashboardScreen {...props} setFullLoadingHandler={setIsLoading} />
+            <DashboardScreen {...props} />
           )}
         </Tab.Screen>
         <Tab.Screen
@@ -160,11 +166,19 @@ function AppContent() {
           component={DashboardScreen}
           options={{ title: "Calendar" }}
         />
-        <Tab.Screen
-          name="ProfileTab"
-          component={DashboardScreen}
-          options={{ title: "Profile" }}
-        />
+        <Tab.Screen name="ProfileTab" options={{ title: "Profile" }}>
+          {(props) => {
+            const student = null;
+            const isViewSelf = true;
+            return (
+              <ProfileScreen
+                {...props}
+                student={student}
+                isViewSelf={isViewSelf}
+              />
+            );
+          }}
+        </Tab.Screen>
       </Tab.Navigator>
       <TouchableOpacity
         style={{
@@ -199,7 +213,7 @@ function AppContent() {
       drawerContent={(props) => (
         <CustomDrawerContent {...props} handleLogout={handleLogout} />
       )}
-      drawerStyle={{ backgroundColor: theme.colors.surface }}
+      drawerStyle={{ backgroundColor: theme.colors.tertiary }}
       screenOptions={{
         drawerActiveTintColor: theme.colors.white,
         drawerInactiveTintColor: theme.colors.black,
@@ -232,8 +246,6 @@ function AppContent() {
           translucent
         />
 
-        {isLoading && <FullLoaderComponent isLoading={isLoading} />}
-
         <NavigationContainer theme={navigationTheme}>
           <Stack.Navigator
             initialRouteName="GetStarted"
@@ -245,7 +257,6 @@ function AppContent() {
               {(props) => (
                 <GetStartedScreen
                   {...props}
-                  setFullLoadingHandler={setIsLoading}
                   onLoginSuccess={(profileData) =>
                     handleLoginSuccess(profileData, props.navigation)
                   }
@@ -257,7 +268,6 @@ function AppContent() {
               {(props) => (
                 <LoginScreen
                   {...props}
-                  setFullLoadingHandler={setIsLoading}
                   onLoginSuccess={(profileData) =>
                     handleLoginSuccess(profileData, props.navigation)
                   }

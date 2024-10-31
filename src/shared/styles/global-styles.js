@@ -14,7 +14,7 @@ const GlobalStyles = StyleSheet.create({
   inputBorder: { borderWidth: 2, borderRadius: 20 },
   input: {
     marginBottom: 15,
-    backgroundColor: "transparent",
+    backgroundColor: "white",
   },
   errorText: {
     color: "red",

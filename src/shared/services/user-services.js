@@ -60,18 +60,7 @@ export const saveUserProfile = async (userId, profileData) => {
     formData.append("password", profileData.password || "");
     formData.append("phoneNumber", profileData.phoneNumber || "");
     formData.append("studentNumber", profileData.studentNumber);
-
-    // Handle the profile picture if it exists
-    if (profileData.profilePicture) {
-      const fileName = profileData.profilePicture.fileName || "photo.jpg"; // Default name if fileName is not provided
-      const type = profileData.profilePicture.type || "image/jpeg"; // Default type if type is not provided
-
-      formData.append("profilePicture", {
-        uri: profileData.profilePicture.uri, // Use 'uri' for React Native
-        name: fileName,
-        type,
-      });
-    }
+    formData.append("profilePicture", profileData.profilePicture);
 
     // Perform the PUT request with FormData
     const response = await axios.put(
@@ -184,24 +173,21 @@ export const fetchCounselorList = async ({
 };
 
 // Load Cloudinary credentials from the environment variables
-const CLOUDINARY_URL =
-  "https://api.cloudinary.com/v1_1/" +
-  process.env.CLOUDINARY_CLOUD_NAME + // Adjusted for React Native, you may want to set these variables manually
-  "/image/upload";
-const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET;
+const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dwbd9mljg/image/upload";
+const CLOUDINARY_UPLOAD_PRESET = "react_uploads";
 
-// Function for uploading a profile picture to Cloudinary
 export const uploadProfilePicture = async (profilePicture) => {
   try {
     const formData = new FormData();
 
-    // Append the profile picture file
+    // Prepare file object for React Native
     if (profilePicture && profilePicture.uri) {
-      formData.append("file", {
+      const file = {
         uri: profilePicture.uri,
-        name: profilePicture.fileName || "photo.jpg", // Default name if fileName is not provided
-        type: profilePicture.type || "image/jpeg", // Default type if type is not provided
-      });
+        name: profilePicture.fileName || "photo.jpg",
+        type: profilePicture.mimeType || "image/jpeg",
+      };
+      formData.append("file", file);
       formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
     }
 
@@ -213,12 +199,9 @@ export const uploadProfilePicture = async (profilePicture) => {
     });
 
     // Get the URL of the uploaded image from the response
-    const imageUrl = response.data.secure_url;
-
-    // Return the image URL (you can use it to update the user's profile)
-    return imageUrl;
+    return response.data.secure_url;
   } catch (error) {
     console.error("Error uploading profile picture:", error);
-    throw error.response;
+    throw error.response ? error.response.data : new Error("Upload failed");
   }
 };

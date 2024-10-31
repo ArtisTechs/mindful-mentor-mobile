@@ -11,6 +11,7 @@ import GetStartedScreenStyle from "./GetStartedScreenStyles";
 import {
   ESuccessMessages,
   getUserDetails,
+  loadingService,
   RoleEnum,
   STORAGE_KEY,
   toastService,
@@ -56,12 +57,7 @@ const CarouselItem = React.memo(({ item }) => (
   </View>
 ));
 
-const GetStartedScreen = ({
-  navigation,
-  setFullLoadingHandler,
-  onLoginSuccess,
-  handleLogout,
-}) => {
+const GetStartedScreen = ({ navigation, onLoginSuccess, handleLogout }) => {
   const {
     currentUserDetails,
     setCurrentUserDetails,
@@ -79,6 +75,7 @@ const GetStartedScreen = ({
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
+        loadingService.show();
         const profileID = await AsyncStorage.getItem(STORAGE_KEY.PROFILE_ID);
         const role = await AsyncStorage.getItem(STORAGE_KEY.ROLE);
         console.log("profileID", profileID);
@@ -92,7 +89,7 @@ const GetStartedScreen = ({
       } catch (error) {
         console.error("Error fetching user details", error);
       } finally {
-        setFullLoadingHandler(false);
+        loadingService.hide();
       }
     };
 

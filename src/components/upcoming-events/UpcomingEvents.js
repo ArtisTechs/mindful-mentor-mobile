@@ -13,10 +13,13 @@ import {
   EErrorMessages,
   ROUTES,
   toastService,
+  modalService,
+  loadingService,
 } from "../../shared";
 import { DateFormat } from "../../shared/enum/date-format.enum";
 import ButtonStyles from "../../shared/styles/button-styles";
 import { Button, IconButton, Menu } from "react-native-paper";
+import theme from "../../shared/styles/theme";
 
 const UpcomingEventsCard = ({ event, onDelete }) => {
   const { title, date, description, studentName, isAppAdmin } = event;
@@ -63,11 +66,7 @@ const UpcomingEventsCard = ({ event, onDelete }) => {
   );
 };
 
-const UpcomingEvents = ({
-  appointments,
-  isAppAdmin,
-  setFullLoadingHandler,
-}) => {
+const UpcomingEvents = ({ appointments, isAppAdmin }) => {
   const [events, setEvents] = useState([]);
   const navigation = useNavigation();
 
@@ -86,39 +85,39 @@ const UpcomingEvents = ({
   }, [appointments, isAppAdmin]);
 
   const handleDeleteEvent = (eventToDelete) => {
-    toastService.show(
-      `Are you sure you want to delete the appointment for ${
+    modalService.show({
+      title: "Confirm Deletion",
+      message: `Are you sure you want to delete the appointment for ${
         isAppAdmin
           ? eventToDelete.studentName
           : formatDate(eventToDelete.date, DateFormat.MONTH_DAY_YEAR)
       }?`,
-      "confirm",
-      {
-        onConfirm: async () => {
-          try {
-            setFullLoadingHandler(true);
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            await deleteAppointment(eventToDelete.id);
-            const updatedEvents = events.filter(
-              (event) => event.id !== eventToDelete.id
-            );
-            setEvents(updatedEvents);
-            setFullLoadingHandler(false);
-            toastService.show(
-              `Appointment deleted for ${formatDate(
-                eventToDelete.date,
-                DateFormat.MONTH_DAY_YEAR
-              )}`,
-              "success"
-            );
-          } catch (error) {
-            setFullLoadingHandler(false);
-            toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
-          }
-        },
-        onCancel: () => {},
-      }
-    );
+      onConfirm: async () => {
+        try {
+          loadingService.show();
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          await deleteAppointment(eventToDelete.id);
+          const updatedEvents = events.filter(
+            (event) => event.id !== eventToDelete.id
+          );
+          setEvents(updatedEvents);
+          loadingService.hide();
+          toastService.show(
+            `Appointment deleted for ${formatDate(
+              eventToDelete.date,
+              DateFormat.MONTH_DAY_YEAR
+            )}`,
+            "success"
+          );
+        } catch (error) {
+          loadingService.hide();
+          toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
+        }
+      },
+      confirmText: "Delete",
+      confirmButtonColor: theme.colors.danger,
+      onCancel: () => {},
+    });
   };
 
   const handleScheduleClick = () => {
@@ -170,7 +169,7 @@ const UpcomingEvents = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: "90%",
+    width: "95%",
     padding: 16,
     borderRadius: 20,
     backgroundColor: "#b4edd8",
