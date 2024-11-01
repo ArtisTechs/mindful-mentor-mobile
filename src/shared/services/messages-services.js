@@ -157,3 +157,74 @@ class WebSocketService {
 }
 
 export const webSocketService = new WebSocketService();
+
+// `combineMessagesBySender` function to combine messages and student details
+export const combineMessagesBySender = (messages, students) => {
+  // Create a map to store the combined messages by senderId
+  const combinedMessages = {};
+
+  // Loop through each message to group them by senderId
+  messages.forEach((message) => {
+    const { senderId, content, timestamp } = message;
+
+    // If senderId is already in the map, append the message to the Messages array
+    if (combinedMessages[senderId]) {
+      combinedMessages[senderId].Messages.push(content);
+
+      // Update the latest date (most recent timestamp) for the senderId
+      const currentLatestDate = new Date(combinedMessages[senderId].latestDate);
+      const messageDate = new Date(timestamp);
+      if (messageDate > currentLatestDate) {
+        combinedMessages[senderId].latestDate = timestamp;
+      }
+    } else {
+      // Initialize a new entry for a senderId
+      combinedMessages[senderId] = {
+        senderId,
+        Messages: [content],
+        latestDate: timestamp,
+      };
+    }
+  });
+
+  // Now combine with student data by comparing senderId with student.id
+  students.forEach((student) => {
+    const { id, Messages = [], latestDate, ...studentDetails } = student; 
+
+    if (combinedMessages[id]) {
+      combinedMessages[id].Messages = [
+        ...combinedMessages[id].Messages,
+        ...(Array.isArray(Messages) ? Messages : []), 
+      ];
+
+      // Update the latest date if the student's latestDate is more recent
+      const currentLatestDate = new Date(combinedMessages[id].latestDate);
+      const studentLatestDate = latestDate ? new Date(latestDate) : null;
+      if (studentLatestDate && studentLatestDate > currentLatestDate) {
+        combinedMessages[id].latestDate = latestDate;
+      }
+
+      // Add student details to the combined object
+      combinedMessages[id] = {
+        ...combinedMessages[id],
+        ...studentDetails, // Include all other student details
+        id, // Keep the student id
+      };
+    } else {
+      // If no matching senderId in combinedMessages, add the student's data along with their messages
+      combinedMessages[id] = {
+        senderId: id, 
+        Messages: Array.isArray(Messages) ? [...Messages] : [], 
+        latestDate,
+        ...studentDetails, 
+        id, 
+      };
+    }
+  });
+
+  return Object.values(combinedMessages);
+};
+
+export const removeMessagesBySenderId = (messages, senderIdToRemove) => {
+  return messages.filter((message) => message.senderId !== senderIdToRemove);
+};

@@ -16,8 +16,18 @@ import SadImage from "../../../assets/img/Sad.png";
 import FrustratedImage from "../../../assets/img/Frustrated.png";
 import logo from "../../../assets/img/mindful-mentor-logo.png";
 import { Icon } from "react-native-elements";
-import { deleteUser, EErrorMessages, emotionCode, modalService, stringAvatar, toastService } from "../../../shared";
+import {
+  AccountStatusEnum,
+  changeUserStatus,
+  deleteUser,
+  EErrorMessages,
+  emotionCode,
+  modalService,
+  stringAvatar,
+  toastService,
+} from "../../../shared";
 import theme from "../../../shared/styles/theme";
+import { useNavigation } from "@react-navigation/native";
 
 const getEmotionImage = (code) => {
   switch (code) {
@@ -61,6 +71,7 @@ const StudentList = ({
   isRequest = false,
   refetch,
 }) => {
+  const navigation = useNavigation();
   const [selectedStudent, setSelectedStudent] = useState(
     isSelectedStudent || null
   );
@@ -69,8 +80,6 @@ const StudentList = ({
 
   useEffect(() => {
     if (!hasInitialized.current && students.length > 0 && onSelectStudent) {
-      onSelectStudent(students[0]);
-      setSelectedStudent(students[0]);
       hasInitialized.current = true;
     }
   }, [students, onSelectStudent]);
@@ -90,13 +99,12 @@ const StudentList = ({
     toggleMenu(student.id);
     switch (action) {
       case "calendar":
-        // Handle Calendar navigation
         break;
       case "chat":
         // Handle Chat navigation
         break;
       case "profile":
-        // Handle Profile navigation
+        navigation.navigate("AdminProfile", { student });
         break;
       case "delete":
         handleDeleteClick(student);
@@ -104,6 +112,52 @@ const StudentList = ({
       default:
         break;
     }
+  };
+
+  const handleApproveClick = (studentDetails) => {
+    modalService.show({
+      title: "Approve Student?",
+      message: `Are you sure you want to approve ${studentDetails.firstName} ${studentDetails.lastName}'s account?`,
+      onConfirm: async () => {
+        try {
+          const status = AccountStatusEnum.ACTIVE;
+          const response = await changeUserStatus(studentDetails.id, status);
+          toastService.show(
+            `${studentDetails.firstName} ${studentDetails.lastName} successfully approved.`,
+            "success"
+          );
+          refetch();
+        } catch (error) {
+          toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
+        }
+      },
+      onCancel: () => {
+        // console.log("Approval cancelled");
+      },
+      confirmText: "Approved",
+    });
+  };
+
+  const handleRejectClick = (studentDetails) => {
+    modalService.show({
+      title: "Reject Student?",
+      message: `Are you sure you want to reject ${studentDetails.firstName} ${studentDetails.lastName}'s account? 
+      The account will also be deleted.`,
+      onConfirm: async () => {
+        try {
+          const response = await deleteUser(studentDetails.id);
+          toastService.show(
+            `${studentDetails.firstName} ${studentDetails.lastName} has been rejected.`,
+            "success"
+          );
+          refetch();
+        } catch (error) {
+          toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
+        }
+      },
+      confirmText: "Reject",
+      confirmButtonColor: theme.colors.danger,
+    });
   };
 
   const handleDeleteClick = (studentDetails) => {
@@ -149,12 +203,20 @@ const StudentList = ({
               ]}
               onPress={() => handleItemClick(student)}
             >
-              <View style={styles.studentInfo}>
+              <View
+                style={
+                  isRequest
+                    ? styles.studentInfoRequest
+                    : !hideOptions
+                    ? styles.studentInfo
+                    : styles.studentInfoHideOptions
+                }
+              >
                 {student.profilePicture &&
                 student.profilePicture !== "undefined" ? (
                   <Avatar.Image
                     source={{ uri: student.profilePicture }}
-                    style={styles.avatar}
+                    style={isRequest ? null : styles.avatar}
                     size={60}
                   />
                 ) : (
@@ -165,10 +227,16 @@ const StudentList = ({
                       60,
                       12
                     )}
-                    style={styles.avatar}
+                    style={isRequest ? null : styles.avatar}
                   />
                 )}
-                <View style={styles.studentLabels}>
+                <View
+                  style={
+                    isRequest
+                      ? styles.studentLabelsRequest
+                      : styles.studentLabels
+                  }
+                >
                   <Text
                     style={styles.studentName}
                   >{`${student.lastName}, ${student.firstName}`}</Text>
@@ -225,18 +293,18 @@ const StudentList = ({
 
               {isRequest && (
                 <View style={styles.buttonContainer}>
-                  <Button
-                    mode="outlined"
-                    onPress={() => handleRejectClick(student)}
-                  >
-                    Reject
-                  </Button>
-                  <Button
-                    mode="contained"
+                  <TouchableOpacity
+                    style={[styles.button, styles.approveButton]}
                     onPress={() => handleApproveClick(student)}
                   >
-                    Approve
-                  </Button>
+                    <Text style={styles.approveButtonText}>Approve</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.button, styles.rejectButton]}
+                    onPress={() => handleRejectClick(student)}
+                  >
+                    <Text style={styles.rejectButtonText}>Reject</Text>
+                  </TouchableOpacity>
                 </View>
               )}
             </TouchableOpacity>
@@ -317,13 +385,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "60%",
   },
+  studentInfoHideOptions: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "90%",
+  },
+  studentInfoRequest: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "60%",
+  },
   avatar: {
     marginRight: 12,
   },
   studentLabels: {
     flexDirection: "column",
     justifyContent: "flex-start",
-    width: "80%",
+    width: "90%",
+  },
+  studentLabelsRequest: {
+    flexDirection: "column",
+    alignItems: "center",
+    width: "100%",
   },
   studentDetailLabel: {
     fontSize: 14,
@@ -339,9 +423,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "100%",
+    flexDirection: "column",
+    width: "40%",
+    gap: 8,
     marginTop: 8,
   },
   noStudentDisplay: {
@@ -350,6 +434,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  button: {
+    padding: 10,
+    borderRadius: 20,
+    alignItems: "center",
+    marginHorizontal: 5,
+  },
+  rejectButton: {
+    backgroundColor: theme.colors.danger,
+  },
+  rejectButtonText: { color: "white" },
+  approveButton: {
+    backgroundColor: theme.colors.primary,
+  },
+  approveButtonText: { color: "black" },
 });
 
 export default StudentList;

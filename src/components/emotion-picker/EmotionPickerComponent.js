@@ -42,7 +42,7 @@ const EmotionPicker = () => {
        const today = getTodayDate();
        try {
          const moods = await getMoods({
-           userId: currentUserDetails.id,
+           userId: currentUserDetails?.id,
            startDate: today,
            endDate: today,
          });
@@ -73,7 +73,7 @@ const EmotionPicker = () => {
     setSelectedEmotion(emotion.description);
 
     const moodDetails = {
-      userId: currentUserDetails.id,
+      userId: currentUserDetails?.id,
       date: getTodayDate(),
       mood: {
         code: emotion.code,

@@ -44,6 +44,8 @@ import JournalStack from "./src/screens/jounal/JournalStack";
 import StudentViewChatScreen from "./src/screens/chat/StudentViewChatScreen";
 import FabStyles from "./src/shared/styles/fab-styles.js";
 import TabNavigator from "./src/components/tab-navigator/TabNavigator.js";
+import AccountRequestScreen from "./src/screens/account-request/AccountRequest.js";
+import AdminViewChatStack from "./src/screens/chat/AdminViewChatStack.js";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -126,6 +128,10 @@ function AppContent() {
           routes: [{ name: "Login" }],
         })
       );
+      if (webSocketService.isConnected) {
+        webSocketService.disconnect();
+      }
+
       setLoggedIn(false);
       setCurrentUserDetails(null);
       setIsAppAdmin(false);
@@ -170,9 +176,9 @@ function AppContent() {
     >
       <Drawer.Screen
         name="Home"
-        component={TabNavigator}
+        component={isAppAdmin ? DashboardScreen : TabNavigator}
         options={{
-          headerShown: false,
+          headerShown: isAppAdmin ? true : false,
           title: "Dashboard",
           drawerIcon: ({ color, size }) => (
             <Icon name="home-outline" color={color} size={size} />
@@ -180,16 +186,68 @@ function AppContent() {
         }}
       />
       {isAppAdmin && (
-        <Drawer.Screen
-          name="StudentList"
-          component={StudentListPage}
-          options={{
-            title: "Students",
-            drawerIcon: ({ color, size }) => (
-              <Icon name="school-outline" color={color} size={size} />
-            ),
-          }}
-        />
+        <>
+          <Drawer.Screen
+            name="AdminProfile"
+            component={ProfileScreen}
+            options={{
+              title: "Profile",
+              drawerIcon: ({ color, size }) => (
+                <Icon name="person-circle-outline" color={color} size={size} />
+              ),
+            }}
+          />
+          <Drawer.Screen
+            name="AdminChat"
+            component={AdminViewChatStack}
+            options={{
+              title: "Chats",
+              drawerIcon: ({ color, size }) => (
+                <Icon name="chatbubble-outline" color={color} size={size} />
+              ),
+            }}
+          />
+          <Drawer.Screen
+            name="StudentList"
+            component={StudentListPage}
+            options={{
+              title: "Students",
+              drawerIcon: ({ color, size }) => (
+                <Icon name="school-outline" color={color} size={size} />
+              ),
+            }}
+          />
+          <Drawer.Screen
+            name="Calendar"
+            component={CalendarScreen}
+            options={{
+              title: "Calendar",
+              drawerIcon: ({ color, size }) => (
+                <Icon name="calendar-outline" color={color} size={size} />
+              ),
+            }}
+          />
+          <Drawer.Screen
+            name="Appointments"
+            component={AppointmentScreen}
+            options={{
+              title: "Appointments",
+              drawerIcon: ({ color, size }) => (
+                <Icon name="clipboard-outline" color={color} size={size} />
+              ),
+            }}
+          />
+          <Drawer.Screen
+            name="Request"
+            component={AccountRequestScreen}
+            options={{
+              title: "Account Request",
+              drawerIcon: ({ color, size }) => (
+                <Icon name="person-add-outline" color={color} size={size} />
+              ),
+            }}
+          />
+        </>
       )}
       {!isAppAdmin && (
         <Drawer.Screen

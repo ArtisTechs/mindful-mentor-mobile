@@ -33,18 +33,17 @@ import ButtonStyles from "../../shared/styles/button-styles";
 import { Icon } from "react-native-elements";
 import permissionServices from "../../shared/services/permission-services";
 import { launchImageLibraryAsync } from "expo-image-picker";
+import { useRoute } from "@react-navigation/native";
 
 const ProfileScreen = () => {
-  const {
-    currentUserDetails,
-    isAppAdmin,
-    selectedStudentDetails,
-    setCurrentUserDetails,
-  } = useGlobalContext();
+  const route = useRoute();
+  const { student } = route.params || {};
+  const { currentUserDetails, isAppAdmin, setCurrentUserDetails } =
+    useGlobalContext();
 
-  const [profile, setProfile] = useState(() => {
-    return selectedStudentDetails || currentUserDetails;
-  });
+  const [profile, setProfile] = useState(
+    () => student || currentUserDetails || {}
+  );
   const [formData, setFormData] = useState(profile);
   const [errors, setErrors] = useState({
     firstName: "",
@@ -64,9 +63,9 @@ const ProfileScreen = () => {
         try {
           loadingService.show();
           await new Promise((resolve) => setTimeout(resolve, 500));
-          const userId = selectedStudentDetails
-            ? selectedStudentDetails.id
-            : currentUserDetails.id;
+          const userId = student ? student?.id : currentUserDetails?.id;
+          if (!userId) return;
+
           const userDetails = await getUserDetails(userId);
           setProfile(userDetails);
           setFormData(userDetails);
@@ -78,7 +77,7 @@ const ProfileScreen = () => {
       };
       fetchUserDetails();
     }
-  }, [selectedStudentDetails, currentUserDetails]);
+  }, [student, currentUserDetails]);
 
   const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -89,7 +88,7 @@ const ProfileScreen = () => {
     let formIsValid = true;
     let newErrors = {};
 
-    if (!selectedStudentDetails && isAppAdmin) {
+    if (!student && isAppAdmin) {
       if (!formData.firstName) {
         newErrors.firstName = EErrorMessages.FIRST_NAME_REQUIRED;
         formIsValid = false;
@@ -167,7 +166,7 @@ const ProfileScreen = () => {
         setTimeout(async () => {
           try {
             const response = await saveUserProfile(
-              profile.id,
+              profile?.id,
               filteredFormData
             );
             setProfile((prev) => ({
@@ -177,7 +176,7 @@ const ProfileScreen = () => {
             setIsEditing(false);
             loadingService.hide();
 
-            if (currentUserDetails.id === filteredFormData.id) {
+            if (currentUserDetails?.id === filteredFormData?.id) {
               setCurrentUserDetails(filteredFormData);
             }
 
@@ -269,9 +268,10 @@ const ProfileScreen = () => {
     <ScrollView style={ProfileScreenStyles.profilePage}>
       <View style={ProfileScreenStyles.avatarContainer}>
         {(!isEditing &&
-          profile.profilePicture &&
-          profile.profilePicture !== "undefined") ||
-        (formData.profilePicture && formData.profilePicture !== "undefined") ? (
+          profile?.profilePicture &&
+          profile?.profilePicture !== "undefined") ||
+        (formData?.profilePicture &&
+          formData?.profilePicture !== "undefined") ? (
           <Avatar.Image
             size={120}
             source={{ uri: profile.profilePicture || formData.profilePicture }}
@@ -288,9 +288,7 @@ const ProfileScreen = () => {
         <View style={ProfileScreenStyles.profileHeader}></View>
 
         {isEditing ? (
-          // Edit Mode
           <View style={ProfileScreenStyles.profileDetailsEdit}>
-            {/* Change Profile Picture Section */}
             {isEditing && (
               <>
                 <TouchableOpacity
@@ -309,7 +307,6 @@ const ProfileScreen = () => {
                 )}
               </>
             )}
-            {/* Other Input Fields */}
             <TextInput
               label="First Name"
               mode="outlined"
@@ -363,27 +360,26 @@ const ProfileScreen = () => {
               onChangeText={(text) => handleChange("email", text)}
               error={!!errors.email}
               editable={isEditing}
-              disabled={isAppAdmin && selectedStudentDetails}
+              disabled={isAppAdmin && student}
             />
             {renderError("email")}
 
-            {(isAppAdmin && selectedStudentDetails) ||
-              (!isAppAdmin && !selectedStudentDetails && (
-                <>
-                  <TextInput
-                    label="Student Number"
-                    mode="outlined"
-                    outlineColor="#b4edd8"
-                    activeOutlineColor="black"
-                    outlineStyle={GlobalStyles.inputBorder}
-                    style={GlobalStyles.input}
-                    value={formData.studentNumber}
-                    onChangeText={(text) => handleChange("studentNumber", text)}
-                    error={!!errors.studentNumber}
-                  />
-                  {renderError("studentNumber")}
-                </>
-              ))}
+            {(isAppAdmin && student) || (!isAppAdmin && !student) ? (
+              <>
+                <TextInput
+                  label="Student Number"
+                  mode="outlined"
+                  outlineColor="#b4edd8"
+                  activeOutlineColor="black"
+                  outlineStyle={GlobalStyles.inputBorder}
+                  style={GlobalStyles.input}
+                  value={formData.studentNumber}
+                  onChangeText={(text) => handleChange("studentNumber", text)}
+                  error={!!errors.studentNumber}
+                />
+                {renderError("studentNumber")}
+              </>
+            ) : null}
 
             <TextInput
               label="Phone Number"
@@ -426,42 +422,45 @@ const ProfileScreen = () => {
             </View>
           </View>
         ) : (
-          // View Mode
           <View style={ProfileScreenStyles.profileDetails}>
             <Text style={ProfileScreenStyles.textLabel}>Name</Text>
             <Text style={ProfileScreenStyles.textValue}>
-              {`${profile.firstName} ${
-                profile.middleName ? profile.middleName + " " : ""
-              }${profile.lastName}` || "N/A"}
+              {profile.firstName
+                ? `${profile.firstName} ${
+                    profile.middleName ? profile.middleName + " " : ""
+                  }${profile.lastName}`
+                : "N/A"}
             </Text>
+
             <Text style={ProfileScreenStyles.textLabel}>Email</Text>
             <Text style={ProfileScreenStyles.textValue}>
               {profile.email || "N/A"}
             </Text>
-            {(isAppAdmin && selectedStudentDetails) ||
-              (!isAppAdmin && !selectedStudentDetails && (
-                <>
-                  <Text style={ProfileScreenStyles.textLabel}>
-                    Student Number
-                  </Text>
-                  <Text style={ProfileScreenStyles.textValue}>
-                    {profile.studentNumber || "N/A"}
-                  </Text>
-                </>
-              ))}
+
+            {(isAppAdmin && student) || (!isAppAdmin && !student) ? (
+              <>
+                <Text style={ProfileScreenStyles.textLabel}>
+                  Student Number
+                </Text>
+                <Text style={ProfileScreenStyles.textValue}>
+                  {profile.studentNumber || "N/A"}
+                </Text>
+              </>
+            ) : null}
+
             <Text style={ProfileScreenStyles.textLabel}>Phone Number</Text>
             <Text style={ProfileScreenStyles.textValue}>
               {profile.phoneNumber || "N/A"}
             </Text>
-            {((isAppAdmin && selectedStudentDetails) ||
-              (!isAppAdmin && !selectedStudentDetails)) && (
+
+            {(isAppAdmin && student) || (!isAppAdmin && !student) ? (
               <>
                 <Text style={ProfileScreenStyles.textLabel}>Counselor</Text>
                 <Text style={ProfileScreenStyles.textValue}>
                   {profile.counselor || "N/A"}
                 </Text>
               </>
-            )}
+            ) : null}
           </View>
         )}
         <View style={ButtonStyles.buttonContainerRow}>

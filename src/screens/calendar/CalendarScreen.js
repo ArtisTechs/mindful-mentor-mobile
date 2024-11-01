@@ -36,7 +36,7 @@ const CalendarScreen = () => {
 
           const filters = {
             userId: selectedStudent
-              ? selectedStudent.id
+              ? selectedStudent?.id
               : currentUserDetails?.id,
             startDate: dateRange.startDate,
             endDate: dateRange.endDate,
@@ -56,7 +56,7 @@ const CalendarScreen = () => {
   }, [dateRange, currentUserDetails, selectedStudent]);
 
   useEffect(() => {
-    if (isAppAdmin) {
+    if (isAppAdmin && currentUserDetails) {
       loadStudents();
     }
   }, [isAppAdmin]);
@@ -115,7 +115,7 @@ const CalendarScreen = () => {
             {students.map((student) => (
               <Picker.Item
                 key={student.id}
-                label={`${student.firstName} ${student.lastName}`}
+                label={`${student.lastName}, ${student.firstName}`}
                 value={student.id}
               />
             ))}

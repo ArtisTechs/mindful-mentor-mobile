@@ -115,7 +115,7 @@ const AppointmentScreen = () => {
 
     try {
       const appointmentDTO = {
-        userId: currentUserDetails.id,
+        userId: currentUserDetails?.id,
         scheduledDate: selectedDate.toISOString().split("T")[0],
         reason,
       };

@@ -59,12 +59,12 @@ const StudentViewChatScreen = ({ setMessageCount, refetch }) => {
 
   useEffect(() => {
     if (counselorDetails && currentUserDetails && !isAppAdmin) {
-      const receiverId = counselorDetails.id;
-      const userId = currentUserDetails.id;
+      const receiverId = counselorDetails?.id;
+      const userId = currentUserDetails?.id;
 
       const handleReceivedMessage = (message) => {
         console.log("message", message);
-        if (message.receiverId === currentUserDetails.id) {
+        if (message.receiverId === currentUserDetails?.id) {
           setNewMessageCount((prevCount) => {
             const updatedCount = prevCount + 1;
             // Delay the update to avoid updating the parent state while rendering
@@ -134,9 +134,9 @@ const StudentViewChatScreen = ({ setMessageCount, refetch }) => {
       try {
         webSocketService.sendMessage(
           messageText,
-          counselorDetails.id,
-          currentUserDetails.id,
-          currentUserDetails.id
+          counselorDetails?.id,
+          currentUserDetails?.id,
+          currentUserDetails?.id
         );
         setInputValue("");
       } catch (error) {
@@ -189,14 +189,14 @@ const StudentViewChatScreen = ({ setMessageCount, refetch }) => {
                 key={index}
                 style={[
                   styles.chatBubble,
-                  msg.senderId === currentUserDetails.id
+                  msg.senderId === currentUserDetails?.id
                     ? styles.userBubble
                     : styles.counselorBubble,
                 ]}
               >
                 <Text
                   style={[
-                    msg.senderId === currentUserDetails.id
+                    msg.senderId === currentUserDetails?.id
                       ? styles.userBubbleText
                       : styles.counselorBubbleText,
                   ]}

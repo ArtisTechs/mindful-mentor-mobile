@@ -23,7 +23,7 @@ const TabNavigator = ({ navigation }) => {
   // Establish WebSocket connection and handle incoming messages
   useEffect(() => {
     if (currentUserDetails && !isAppAdmin) {
-      const userId = currentUserDetails.id;
+      const userId = currentUserDetails?.id;
 
       const handleReceivedMessage = (message) => {
         if (message.receiverId === userId) {

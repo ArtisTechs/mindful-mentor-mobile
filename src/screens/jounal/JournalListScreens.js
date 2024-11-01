@@ -35,7 +35,7 @@ const JournalListScreen = () => {
     try {
       if (currentUserDetails?.id) {
         const journalData = await fetchJournalsByUser({
-          userId: currentUserDetails.id,
+          userId: currentUserDetails?.id,
           sortBy: "entryDate",
           asc: true,
         });

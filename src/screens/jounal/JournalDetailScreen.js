@@ -117,7 +117,7 @@ const JournalDetailScreen = () => {
         response = await updateJournal(journalId, journalData);
         toastService.show("Journal successfully updated.", "success");
       } else {
-        response = await createJournal(currentUserDetails.id, journalData);
+        response = await createJournal(currentUserDetails?.id, journalData);
         toastService.show("Journal successfully created.", "success");
       }
       navigation.goBack();

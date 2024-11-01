@@ -24,7 +24,7 @@ const DashboardScreenStyles = StyleSheet.create({
     fontWeight: "bold",
   },
   studentList: {
-    height: "45%",
+    height: "50%",
     width: "100%"
   },
 });
