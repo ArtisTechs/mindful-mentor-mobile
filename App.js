@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { StatusBar, SafeAreaView, View, TouchableOpacity } from "react-native";
+import {
+  StatusBar,
+  SafeAreaView,
+  View,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 import { NavigationContainer, CommonActions } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import { Provider as PaperProvider } from "react-native-paper";
+import { Provider as PaperProvider, Text } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/Ionicons"; // Install this for icons
 
@@ -29,6 +35,9 @@ import CustomDrawerContent from "./src/components/menu/CustomDrawerContent";
 import theme from "./src/shared/styles/theme";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import ProfileScreen from "./src/screens/profile/ProfileScreen";
+import AppointmentScreen from "./src/screens/appointment/AppointmentScreen";
+import CalendarScreen from "./src/screens/calendar/CalendarScreen";
+import StudentListPage from "./src/screens/student-list/StudentListScreen";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -61,8 +70,12 @@ export default function App() {
 function AppContent() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [drawerTitle, setDrawerTitle] = useState("Dashboard");
-  const { currentUserDetails, setCurrentUserDetails, setIsAppAdmin } =
-    useGlobalContext();
+  const {
+    currentUserDetails,
+    setCurrentUserDetails,
+    setIsAppAdmin,
+    setIsRefetch,
+  } = useGlobalContext();
 
   useEffect(() => {
     toastService.registerShowToastCallback((message, variant) => {
@@ -120,6 +133,10 @@ function AppContent() {
     setDrawerTitle(title);
   };
 
+  const handleRefresh = () => {
+    setIsRefetch((prev) => !prev);
+  };
+
   const TabNavigator = ({ navigation }) => (
     <View style={{ flex: 1 }}>
       {/* Wrap in a View to manage layout */}
@@ -149,21 +166,27 @@ function AppContent() {
               <Icon name="menu" size={24} color={theme.colors.black} />
             </TouchableOpacity>
           ),
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={handleRefresh}
+              style={{ paddingRight: 20 }}
+            >
+              <Icon name="refresh" size={24} color={theme.colors.black} />
+            </TouchableOpacity>
+          ),
         })}
       >
         <Tab.Screen name="DashboardTab" options={{ title: "Dashboard" }}>
-          {(props) => (
-            <DashboardScreen {...props} />
-          )}
+          {(props) => <DashboardScreen {...props} />}
         </Tab.Screen>
         <Tab.Screen
           name="AppointmentTab"
-          component={DashboardScreen}
-          options={{ title: "Appointment" }}
+          component={AppointmentScreen}
+          options={{ title: "Appointments" }}
         />
         <Tab.Screen
           name="CalendarTab"
-          component={DashboardScreen}
+          component={CalendarScreen}
           options={{ title: "Calendar" }}
         />
         <Tab.Screen name="ProfileTab" options={{ title: "Profile" }}>
@@ -218,6 +241,14 @@ function AppContent() {
         drawerActiveTintColor: theme.colors.white,
         drawerInactiveTintColor: theme.colors.black,
         drawerActiveBackgroundColor: theme.colors.darkPrimary,
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={handleRefresh}
+            style={{ paddingRight: 20 }}
+          >
+            <Icon name="refresh" size={24} color={theme.colors.black} />
+          </TouchableOpacity>
+        ),
       }}
     >
       <Drawer.Screen
@@ -228,6 +259,16 @@ function AppContent() {
           title: "Dashboard",
           drawerIcon: ({ color, size }) => (
             <Icon name="home-outline" color={color} size={size} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="StudentList"
+        component={StudentListPage}
+        options={{
+          title: "Students",
+          drawerIcon: ({ color, size }) => (
+            <Icon name="school-outline" color={color} size={size} />
           ),
         }}
       />
@@ -293,8 +334,54 @@ function AppContent() {
             />
           </Stack.Navigator>
         </NavigationContainer>
-        <Toast />
+        <Toast config={toastConfig} />
       </SafeAreaView>
     </PaperProvider>
   );
 }
+
+const toastConfig = {
+  success: ({ text1 }) => (
+    <View style={ToastStyles.toastContainer}>
+      <Text style={ToastStyles.toastText}>{text1}</Text>
+    </View>
+  ),
+  error: ({ text1 }) => (
+    <View style={[ToastStyles.toastContainer, ToastStyles.errorContainer]}>
+      <Text style={ToastStyles.toastText}>{text1}</Text>
+    </View>
+  ),
+  info: ({ text1 }) => (
+    <View style={[ToastStyles.toastContainer, ToastStyles.infoContainer]}>
+      <Text style={ToastStyles.toastText}>{text1}</Text>
+    </View>
+  ),
+};
+
+const ToastStyles = StyleSheet.create({
+  toastContainer: {
+    padding: 10,
+    backgroundColor: "#4CAF50",
+    borderRadius: 8,
+    marginHorizontal: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    maxWidth: "90%",
+    alignSelf: "center",
+    marginTop: 10,
+  },
+  errorContainer: {
+    backgroundColor: "#f44336",
+  },
+  infoContainer: {
+    backgroundColor: "#2196F3",
+  },
+  toastText: {
+    color: "#fff",
+    fontSize: 16,
+    textAlign: "center",
+    flexWrap: "wrap",
+    width: "100%",
+    maxWidth: "100%",
+  },
+});

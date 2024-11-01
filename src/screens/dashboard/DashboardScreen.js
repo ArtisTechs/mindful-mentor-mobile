@@ -5,6 +5,7 @@ import EmotionPicker from "../../components/emotion-picker/EmotionPickerComponen
 import UpcomingEvents from "../../components/upcoming-events/UpcomingEvents";
 import StudentList from "../../components/listing/student-list/StudentList";
 import {
+  AppointmentStatusEnum,
   fetchAppointmentList,
   getStudentsWithMoodToday,
   loadingService,
@@ -61,6 +62,7 @@ const DashboardScreen = () => {
         sortDirection: "DSC",
         startDate: today,
         endDate: isAppAdmin ? finalEndDate : null,
+        status: isAppAdmin ? AppointmentStatusEnum.APPROVED : null,
       });
 
       setAppointments(response.content);
@@ -102,11 +104,13 @@ const DashboardScreen = () => {
       <View style={DashboardScreenStyles.homePageCards}>
         <UpcomingEvents appointments={appointments} isAppAdmin={isAppAdmin} />
         {isAppAdmin && (
-          <StudentList
-            students={students}
-            loading={studentLoading}
-            hideDelete={true}
-          />
+          <View style={DashboardScreenStyles.studentList}>
+            <StudentList
+              students={students}
+              loading={studentLoading}
+              hideDelete={true}
+            />
+          </View>
         )}
       </View>
     </View>

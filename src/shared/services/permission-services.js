@@ -6,10 +6,9 @@ const requestStoragePermission = async () => {
   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
   if (status !== "granted") {
-    Alert.alert(
-      "Permission Required",
-      "We need permission to access your photos to change your profile picture.",
-      [{ text: "OK" }]
+    toastService.show(
+      "Permission Required. We need permission to access your photos to change your profile picture.",
+      "error"
     );
     return false; // Permission not granted
   }

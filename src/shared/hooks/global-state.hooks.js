@@ -2,6 +2,7 @@
 import { useState } from "react";
 
 const useGlobalState = () => {
+  const [isRefetch, setIsRefetch] = useState(false);
   const [currentUserDetails, setCurrentUserDetails] = useState("");
   const [selectedStudentDetails, setSelectedStudentDetails] = useState("");
   const [isAppAdmin, setIsAppAdmin] = useState(false);
@@ -9,6 +10,8 @@ const useGlobalState = () => {
   const [isMessagesFetch, setIsMessagesFetch] = useState(false);
 
   return {
+    isRefetch,
+    setIsRefetch,
     currentUserDetails,
     setCurrentUserDetails,
     isAppAdmin,

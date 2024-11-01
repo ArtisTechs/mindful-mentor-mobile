@@ -16,7 +16,8 @@ import SadImage from "../../../assets/img/Sad.png";
 import FrustratedImage from "../../../assets/img/Frustrated.png";
 import logo from "../../../assets/img/mindful-mentor-logo.png";
 import { Icon } from "react-native-elements";
-import { emotionCode, stringAvatar } from "../../../shared";
+import { deleteUser, EErrorMessages, emotionCode, modalService, stringAvatar, toastService } from "../../../shared";
+import theme from "../../../shared/styles/theme";
 
 const getEmotionImage = (code) => {
   switch (code) {
@@ -58,6 +59,7 @@ const StudentList = ({
   onSelectStudent,
   isSelectedStudent,
   isRequest = false,
+  refetch,
 }) => {
   const [selectedStudent, setSelectedStudent] = useState(
     isSelectedStudent || null
@@ -104,8 +106,25 @@ const StudentList = ({
     }
   };
 
-  const handleDeleteClick = (student) => {
-    // Call your modalService or confirmation logic
+  const handleDeleteClick = (studentDetails) => {
+    modalService.show({
+      title: "Delete Student",
+      message: `Are you sure you want to Delete ${studentDetails.firstName} ${studentDetails.lastName}'s account?`,
+      onConfirm: async () => {
+        try {
+          const response = await deleteUser(studentDetails.id);
+          toastService.show(
+            `${studentDetails.firstName} ${studentDetails.lastName} has been deleted.`,
+            "success"
+          );
+          refetch();
+        } catch (error) {
+          toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
+        }
+      },
+      confirmText: "Delete",
+      confirmButtonColor: theme.colors.danger,
+    });
   };
 
   return (
@@ -247,7 +266,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   scrollableList: {
-    maxHeight: 300,
+    maxHeight: "100%",
   },
   studentList: {
     paddingBottom: 16,
@@ -326,9 +345,8 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   noStudentDisplay: {
-    width: 300,
-    height: "50%",
-    marginTop: 8,
+    width: "100%",
+    height: "40%",
     justifyContent: "center",
     alignItems: "center",
   },
