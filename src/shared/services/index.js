@@ -6,3 +6,5 @@ export * from "./appointment-services.js";
 export * from "./modal.services.js";
 export * from "./loading-services.js";
 export * from "./permission-services.js";
+export * from "./journal-services.js";
+export * from "./messages-services.js";

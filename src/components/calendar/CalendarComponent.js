@@ -197,13 +197,25 @@ const CalendarComponent = ({ data, onDateRangeChange }) => {
           style={view === "month" ? styles.activeButton : styles.button}
           onPress={() => setView("month")}
         >
-          <Text style={styles.buttonText}>Monthly</Text>
+          <Text
+            style={
+              view === "month" ? styles.activeButtonText : styles.buttonText
+            }
+          >
+            Monthly
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={view === "week" ? styles.activeButton : styles.button}
           onPress={() => setView("week")}
         >
-          <Text style={styles.buttonText}>Weekly</Text>
+          <Text
+            style={
+              view === "week" ? styles.activeButtonText : styles.buttonText
+            }
+          >
+            Weekly
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -299,19 +311,22 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   button: {
-    backgroundColor: theme.colors.tertiary,
+    backgroundColor: "white",
     padding: 10,
     borderRadius: 20,
     marginHorizontal: 10,
   },
   activeButton: {
-    backgroundColor: "white",
+    backgroundColor: theme.colors.secondary,
     padding: 10,
     borderRadius: 20,
     marginHorizontal: 10,
   },
   buttonText: {
     color: "black",
+  },
+  activeButtonText: {
+    color: "white",
   },
   header: {
     flexDirection: "row",

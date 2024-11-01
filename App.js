@@ -38,6 +38,8 @@ import ProfileScreen from "./src/screens/profile/ProfileScreen";
 import AppointmentScreen from "./src/screens/appointment/AppointmentScreen";
 import CalendarScreen from "./src/screens/calendar/CalendarScreen";
 import StudentListPage from "./src/screens/student-list/StudentListScreen";
+import JournalStack from "./src/screens/jounal/JournalStack";
+import StudentViewChatScreen from "./src/screens/chat/StudentViewChatScreen";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -75,6 +77,7 @@ function AppContent() {
     setCurrentUserDetails,
     setIsAppAdmin,
     setIsRefetch,
+    isAppAdmin,
   } = useGlobalContext();
 
   useEffect(() => {
@@ -185,6 +188,11 @@ function AppContent() {
           options={{ title: "Appointments" }}
         />
         <Tab.Screen
+          name="ChatTab"
+          component={StudentViewChatScreen}
+          options={{ title: "Chat" }}
+        />
+        <Tab.Screen
           name="CalendarTab"
           component={CalendarScreen}
           options={{ title: "Calendar" }}
@@ -262,16 +270,31 @@ function AppContent() {
           ),
         }}
       />
-      <Drawer.Screen
-        name="StudentList"
-        component={StudentListPage}
-        options={{
-          title: "Students",
-          drawerIcon: ({ color, size }) => (
-            <Icon name="school-outline" color={color} size={size} />
-          ),
-        }}
-      />
+      {isAppAdmin && (
+        <Drawer.Screen
+          name="StudentList"
+          component={StudentListPage}
+          options={{
+            title: "Students",
+            drawerIcon: ({ color, size }) => (
+              <Icon name="school-outline" color={color} size={size} />
+            ),
+          }}
+        />
+      )}
+      {!isAppAdmin && (
+        <Drawer.Screen
+          name="Journal"
+          component={JournalStack}
+          options={{
+            title: "Journal",
+            drawerIcon: ({ color, size }) => (
+              <Icon name="book-outline" color={color} size={size} />
+            ),
+          }}
+        />
+      )}
+
       {/* Add additional drawer screens here */}
     </Drawer.Navigator>
   );
