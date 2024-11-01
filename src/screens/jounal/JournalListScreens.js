@@ -14,6 +14,7 @@ import {
   toastService,
   EErrorMessages,
   formatDate,
+  loadingService,
 } from "../../shared";
 import theme from "../../shared/styles/theme";
 import { DateFormat } from "../../shared/enum/date-format.enum";
@@ -30,6 +31,7 @@ const JournalListScreen = () => {
   }, [currentUserDetails]);
 
   const loadJournals = async () => {
+    loadingService.show();
     try {
       if (currentUserDetails?.id) {
         const journalData = await fetchJournalsByUser({
@@ -41,6 +43,8 @@ const JournalListScreen = () => {
       }
     } catch (error) {
       toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
+    } finally {
+      loadingService.hide();
     }
   };
 

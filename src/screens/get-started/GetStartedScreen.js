@@ -78,7 +78,6 @@ const GetStartedScreen = ({ navigation, onLoginSuccess, handleLogout }) => {
         loadingService.show();
         const profileID = await AsyncStorage.getItem(STORAGE_KEY.PROFILE_ID);
         const role = await AsyncStorage.getItem(STORAGE_KEY.ROLE);
-        console.log("profileID", profileID);
 
         if (profileID) {
           setIsAppAdmin(role === RoleEnum.COUNSELOR);

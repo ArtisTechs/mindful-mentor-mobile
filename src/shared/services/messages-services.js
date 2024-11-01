@@ -17,13 +17,17 @@ class WebSocketService {
     this.subscriptions = {};
   }
 
+  isConnected() {
+    return this.stompClient && this.stompClient.connected;
+  }
+
   // Establish WebSocket connection
   async connect(userId, onMessageReceived) {
     console.log;
     try {
       const storedToken = await getTokenAsync();
       if (!storedToken) {
-        console.error("No auth token found!");
+        console.log("No auth token found!");
         return;
       }
 
@@ -45,11 +49,11 @@ class WebSocketService {
           this.retryInterval = 5000;
         },
         onStompError: (frame) => {
-          console.error("STOMP error:", frame);
+          console.log("STOMP error:", frame);
           this.retryConnection(userId, onMessageReceived);
         },
         onWebSocketClose: (event) => {
-          console.error("WebSocket closed:", event);
+          console.log("WebSocket closed:", event);
           this.retryConnection(userId, onMessageReceived);
         },
       });
@@ -57,7 +61,7 @@ class WebSocketService {
       // Activate WebSocket connection
       this.stompClient.activate();
     } catch (error) {
-      console.error("Error establishing WebSocket connection:", error);
+      console.log("Error establishing WebSocket connection:", error);
     }
   }
 
@@ -76,7 +80,6 @@ class WebSocketService {
       (message) => {
         const newMessage = JSON.parse(message.body);
         onMessageReceived(newMessage);
-        console.log("Received private message:", newMessage);
       }
     );
   }
@@ -147,7 +150,7 @@ class WebSocketService {
 
       return response.data;
     } catch (error) {
-      console.error("Failed to fetch message history:", error);
+      console.log("Failed to fetch message history:", error);
       return [];
     }
   }

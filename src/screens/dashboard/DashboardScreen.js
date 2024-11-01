@@ -27,7 +27,6 @@ const DashboardScreen = () => {
         loadingService.show();
         await loadAppointments();
         if (isAppAdmin) {
-          console.log("isAppAdmin", isAppAdmin);
           await loadStudentsWithMoodToday();
         }
       } else {

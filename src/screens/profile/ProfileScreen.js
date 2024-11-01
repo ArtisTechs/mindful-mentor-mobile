@@ -170,7 +170,6 @@ const ProfileScreen = () => {
               profile.id,
               filteredFormData
             );
-            console.log("response", response);
             setProfile((prev) => ({
               ...prev,
               ...filteredFormData,
@@ -233,9 +232,7 @@ const ProfileScreen = () => {
               ...prev,
               profilePicture: uploadedImageUrl,
             }));
-            console.log(uploadedImageUrl);
           } catch (error) {
-            console.log(error);
             console.error("Error uploading the profile picture:", error);
           } finally {
             loadingService.hide();

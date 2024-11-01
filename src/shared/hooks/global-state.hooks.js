@@ -8,6 +8,7 @@ const useGlobalState = () => {
   const [isAppAdmin, setIsAppAdmin] = useState(false);
   const [adminMessages, setAdminMessages] = useState([]);
   const [isMessagesFetch, setIsMessagesFetch] = useState(false);
+   const [studentMessages, setStudentMessages] = useState([]);
 
   return {
     isRefetch,
@@ -22,6 +23,8 @@ const useGlobalState = () => {
     setIsMessagesFetch,
     selectedStudentDetails,
     setSelectedStudentDetails,
+    studentMessages,
+    setStudentMessages,
   };
 };
 

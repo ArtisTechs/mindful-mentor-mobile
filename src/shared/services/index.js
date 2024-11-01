@@ -8,3 +8,4 @@ export * from "./loading-services.js";
 export * from "./permission-services.js";
 export * from "./journal-services.js";
 export * from "./messages-services.js";
+export * from "./notification-service.js";

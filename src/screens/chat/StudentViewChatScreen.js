@@ -14,15 +14,17 @@ import {
   EErrorMessages,
   fetchCounselorList,
   loadingService,
+  showLocalNotification,
   stringAvatar,
   toastService,
   useGlobalContext,
   webSocketService,
 } from "../../shared";
 import theme from "../../shared/styles/theme";
+import { Avatar } from "react-native-paper";
 
-const StudentViewChatScreen = () => {
-  const { currentUserDetails } = useGlobalContext();
+const StudentViewChatScreen = ({ setMessageCount, refetch }) => {
+  const { currentUserDetails, isAppAdmin } = useGlobalContext();
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [newMessageCount, setNewMessageCount] = useState(0);
@@ -30,8 +32,13 @@ const StudentViewChatScreen = () => {
   const [counselorDetails, setCounselorDetails] = useState(null);
 
   useEffect(() => {
-    fetchCounselorDetails();
-  }, [currentUserDetails]);
+    if (currentUserDetails) {
+      fetchCounselorDetails();
+    }
+    if (webSocketService.isConnected()) {
+      webSocketService.disconnect();
+    }
+  }, [currentUserDetails, refetch]);
 
   const fetchCounselorDetails = async () => {
     loadingService.show();
@@ -51,15 +58,33 @@ const StudentViewChatScreen = () => {
   };
 
   useEffect(() => {
-    if (counselorDetails) {
+    if (counselorDetails && currentUserDetails && !isAppAdmin) {
       const receiverId = counselorDetails.id;
       const userId = currentUserDetails.id;
 
       const handleReceivedMessage = (message) => {
-        if (message.senderId === receiverId) {
-          setNewMessageCount((prevCount) => prevCount + 1);
+        console.log("message", message);
+        if (message.receiverId === currentUserDetails.id) {
+          setNewMessageCount((prevCount) => {
+            const updatedCount = prevCount + 1;
+            // Delay the update to avoid updating the parent state while rendering
+            setTimeout(() => {
+              setMessageCount(updatedCount);
+            }, 10);
+            return updatedCount;
+          });
+
+          const notificationTitle = "New Message from Your Counselor";
+          const notificationMessage =
+            message.content || "You have a new message!";
+
+          showLocalNotification(notificationTitle, notificationMessage);
         } else {
-          setNewMessageCount(0);
+          // Resetting the message count
+          setTimeout(() => {
+            setNewMessageCount(0);
+            setMessageCount(0);
+          }, 10);
         }
         setMessages((prevMessages) => [...prevMessages, message]);
       };
@@ -95,7 +120,7 @@ const StudentViewChatScreen = () => {
         webSocketService.disconnect();
       };
     }
-  }, [counselorDetails, currentUserDetails]);
+  }, [counselorDetails, currentUserDetails, refetch]);
 
   useEffect(() => {
     if (chatBodyRef.current) {
@@ -121,92 +146,129 @@ const StudentViewChatScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.chatHeader}>
-        <View style={styles.chatAvatar}>
-          {counselorDetails && (
-            <Ionicons
-              name="person-circle"
-              size={40}
-              color={theme.colors.secondary}
-            />
-          )}
-          <Text style={styles.chatHeaderText}>
-            {counselorDetails
-              ? `${counselorDetails.firstName} ${counselorDetails.lastName} (Counselor)`
-              : "Counselor"}
-          </Text>
+    <View style={styles.screen}>
+      <View style={styles.container}>
+        <View style={styles.chatHeader}>
+          <View style={styles.chatAvatar}>
+            {counselorDetails?.profilePicture &&
+            counselorDetails?.profilePicture !== "undefined" ? (
+              <Avatar.Image
+                source={{ uri: counselorDetails.profilePicture }}
+                style={styles.avatar}
+                size={60}
+              />
+            ) : (
+              <Avatar.Text
+                {...stringAvatar(
+                  counselorDetails?.firstName,
+                  counselorDetails?.lastName,
+                  60,
+                  12
+                )}
+                style={styles.avatar}
+              />
+            )}
+            <Text style={styles.chatHeaderText}>
+              {counselorDetails
+                ? `${counselorDetails.firstName} ${counselorDetails.lastName} (Counselor)`
+                : "Counselor"}
+            </Text>
+          </View>
         </View>
-      </View>
 
-      <ScrollView
-        style={styles.chatBody}
-        ref={chatBodyRef}
-        onContentSizeChange={() =>
-          chatBodyRef.current?.scrollToEnd({ animated: true })
-        }
-      >
-        {messages.length > 0 ? (
-          messages.map((msg, index) => (
-            <View
-              key={index}
-              style={[
-                styles.chatBubble,
-                msg.senderId === currentUserDetails.id
-                  ? styles.userBubble
-                  : styles.counselorBubble,
-              ]}
-            >
-              <Text>{msg.content}</Text>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.noMessagesText}>
-            No messages yet. Feel free to reach out to your counselor — start
-            the conversation anytime!
-          </Text>
-        )}
-      </ScrollView>
+        <ScrollView
+          style={styles.chatBody}
+          ref={chatBodyRef}
+          onContentSizeChange={() =>
+            chatBodyRef.current?.scrollToEnd({ animated: true })
+          }
+        >
+          {messages.length > 0 ? (
+            messages.map((msg, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.chatBubble,
+                  msg.senderId === currentUserDetails.id
+                    ? styles.userBubble
+                    : styles.counselorBubble,
+                ]}
+              >
+                <Text
+                  style={[
+                    msg.senderId === currentUserDetails.id
+                      ? styles.userBubbleText
+                      : styles.counselorBubbleText,
+                  ]}
+                >
+                  {msg.content}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.noMessagesText}>
+              No messages yet. Feel free to reach out to your counselor — start
+              the conversation anytime!
+            </Text>
+          )}
+        </ScrollView>
 
-      <View style={styles.chatFooter}>
-        <TextInput
-          style={styles.input}
-          value={inputValue}
-          onChangeText={setInputValue}
-          placeholder="Type a message..."
-          maxLength={255}
-        />
-        <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
-          <Ionicons name="send" size={24} color="white" />
-        </TouchableOpacity>
+        <View style={styles.chatFooter}>
+          <TextInput
+            style={styles.input}
+            value={inputValue}
+            onChangeText={setInputValue}
+            placeholder="Type a message..."
+            maxLength={255}
+          />
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={handleSendMessage}
+          >
+            <Ionicons name="send" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
     backgroundColor: "white",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  container: {
+    backgroundColor: theme.colors.primary,
+    width: "95%",
+    height: "85%",
+    borderRadius: 25,
   },
   chatHeader: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
     backgroundColor: theme.colors.primary,
+    borderRadius: 25,
   },
   chatAvatar: {
     flexDirection: "row",
     alignItems: "center",
   },
+  Avatar: {
+    marginRight: 12,
+  },
   chatHeaderText: {
     fontSize: 18,
-    color: "white",
+    color: "black",
+    fontWeight: "bold",
     marginLeft: 8,
   },
   chatBody: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
   },
   chatBubble: {
     padding: 10,
@@ -219,7 +281,13 @@ const styles = StyleSheet.create({
   },
   counselorBubble: {
     alignSelf: "flex-start",
-    backgroundColor: theme.colors.tertiary,
+    backgroundColor: "white",
+  },
+  userBubbleText: {
+    color: "white",
+  },
+  counselorBubbleText: {
+    color: "black",
   },
   noMessagesText: {
     textAlign: "center",
@@ -239,11 +307,12 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   sendButton: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.secondary,
     borderRadius: 20,
     padding: 10,
     justifyContent: "center",
     alignItems: "center",
+    height: 45,
   },
 });
 

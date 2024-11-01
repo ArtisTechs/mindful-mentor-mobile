@@ -24,11 +24,13 @@ import GetStartedScreen from "./src/screens/get-started/GetStartedScreen";
 import Toast from "react-native-toast-message";
 import {
   getUserDetails,
+  initializeNotifications,
   LoaderProvider,
   ModalProvider,
   RoleEnum,
   STORAGE_KEY,
   toastService,
+  webSocketService,
 } from "./src/shared";
 import FullLoaderComponent from "./src/components/full-loading-screen/FullLoaderComponent";
 import CustomDrawerContent from "./src/components/menu/CustomDrawerContent";
@@ -40,6 +42,8 @@ import CalendarScreen from "./src/screens/calendar/CalendarScreen";
 import StudentListPage from "./src/screens/student-list/StudentListScreen";
 import JournalStack from "./src/screens/jounal/JournalStack";
 import StudentViewChatScreen from "./src/screens/chat/StudentViewChatScreen";
+import FabStyles from "./src/shared/styles/fab-styles.js";
+import TabNavigator from "./src/components/tab-navigator/TabNavigator.js";
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -71,7 +75,7 @@ export default function App() {
 
 function AppContent() {
   const [loggedIn, setLoggedIn] = useState(false);
-  const [drawerTitle, setDrawerTitle] = useState("Dashboard");
+  const [newMessageCount, setNewMessageCount] = useState(0);
   const {
     currentUserDetails,
     setCurrentUserDetails,
@@ -81,6 +85,7 @@ function AppContent() {
   } = useGlobalContext();
 
   useEffect(() => {
+    initializeNotifications();
     toastService.registerShowToastCallback((message, variant) => {
       Toast.show({
         type: variant,
@@ -93,7 +98,6 @@ function AppContent() {
 
   const handleLoginSuccess = async (profileData, navigate) => {
     try {
-      console.log("profileDatasss", profileData);
       if (profileData?.token) {
         await AsyncStorage.setItem(STORAGE_KEY.TOKEN, profileData.token);
       }
@@ -126,118 +130,23 @@ function AppContent() {
       setCurrentUserDetails(null);
       setIsAppAdmin(false);
       const profileID = await AsyncStorage.getItem(STORAGE_KEY.PROFILE_ID);
-      console.log("profileID", profileID);
     } catch (error) {
-      console.error("Error clearing AsyncStorage", error);
+      console.log("Error clearing AsyncStorage", error);
     }
-  };
-
-  const handleTabChange = (title) => {
-    setDrawerTitle(title);
   };
 
   const handleRefresh = () => {
     setIsRefetch((prev) => !prev);
   };
 
-  const TabNavigator = ({ navigation }) => (
-    <View style={{ flex: 1 }}>
-      {/* Wrap in a View to manage layout */}
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          tabBarIcon: ({ color, size }) => {
-            let iconName;
-            if (route.name === "DashboardTab") {
-              iconName = "home-outline";
-            } else if (route.name === "AppointmentTab") {
-              iconName = "clipboard-outline";
-            } else if (route.name === "CalendarTab") {
-              iconName = "calendar-outline";
-            } else if (route.name === "ProfileTab") {
-              iconName = "person-outline";
-            }
-            return <Icon name={iconName} size={size} color={color} />;
-          },
-          tabBarActiveTintColor: theme.colors.white,
-          tabBarInactiveTintColor: theme.colors.secondary,
-          tabBarActiveBackgroundColor: theme.colors.darkPrimary,
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => navigation.toggleDrawer()}
-              style={{ paddingLeft: 20 }}
-            >
-              <Icon name="menu" size={24} color={theme.colors.black} />
-            </TouchableOpacity>
-          ),
-          headerRight: () => (
-            <TouchableOpacity
-              onPress={handleRefresh}
-              style={{ paddingRight: 20 }}
-            >
-              <Icon name="refresh" size={24} color={theme.colors.black} />
-            </TouchableOpacity>
-          ),
-        })}
-      >
-        <Tab.Screen name="DashboardTab" options={{ title: "Dashboard" }}>
-          {(props) => <DashboardScreen {...props} />}
-        </Tab.Screen>
-        <Tab.Screen
-          name="AppointmentTab"
-          component={AppointmentScreen}
-          options={{ title: "Appointments" }}
-        />
-        <Tab.Screen
-          name="ChatTab"
-          component={StudentViewChatScreen}
-          options={{ title: "Chat" }}
-        />
-        <Tab.Screen
-          name="CalendarTab"
-          component={CalendarScreen}
-          options={{ title: "Calendar" }}
-        />
-        <Tab.Screen name="ProfileTab" options={{ title: "Profile" }}>
-          {(props) => {
-            const student = null;
-            const isViewSelf = true;
-            return (
-              <ProfileScreen
-                {...props}
-                student={student}
-                isViewSelf={isViewSelf}
-              />
-            );
-          }}
-        </Tab.Screen>
-      </Tab.Navigator>
-      <TouchableOpacity
-        style={{
-          position: "absolute",
-          bottom: 20,
-          left: "50%",
-          marginLeft: -35,
-          width: 70,
-          height: 70,
-          borderRadius: 35,
-          backgroundColor: theme.colors.secondary,
-          alignItems: "center",
-          justifyContent: "center",
-          elevation: 5,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.2,
-          shadowRadius: 2,
-        }}
-        onPress={() => {
-          console.log("FAB pressed");
-          // Example: navigation.navigate("YourNewScreen");
-        }}
-      >
-        <Icon name="chatbubble-outline" size={30} color={theme.colors.white} />
-      </TouchableOpacity>
-    </View>
-  );
+  const handleNewMessages = (count) => {
+    console.log(count);
+    if (count) {
+      setNewMessageCount(count);
+    } else {
+      setNewMessageCount(0);
+    }
+  };
 
   const DrawerNavigator = () => (
     <Drawer.Navigator
@@ -347,7 +256,7 @@ function AppContent() {
                   <TouchableOpacity onPress={() => navigation.toggleDrawer()}>
                     <Icon
                       name="menu"
-                      size={24}
+                      size={28}
                       color={theme.colors.primary}
                       style={{ marginLeft: 15 }}
                     />
