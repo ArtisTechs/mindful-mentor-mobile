@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import DashboardScreenStyles from "./DashboardScreenStyles";
 import EmotionPicker from "../../components/emotion-picker/EmotionPickerComponent";
 import UpcomingEvents from "../../components/upcoming-events/UpcomingEvents";
@@ -11,16 +11,23 @@ import {
   loadingService,
   useGlobalContext,
 } from "../../shared";
+import { TouchableOpacity } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
+import theme from "../../shared/styles/theme";
+import FabStyles from "../../shared/styles/fab-styles";
+import { useNavigation } from "@react-navigation/native";
+import useMessageService from "../../shared/services/get-message-service";
 
 const DashboardScreen = () => {
+  const navigation = useNavigation();
   const { currentUserDetails, isAppAdmin } = useGlobalContext();
+  const { adminMessages, newMessageCount } = useMessageService();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState([]);
   const [studentLoading, setStudentLoading] = useState(true);
-
   useEffect(() => {
-    let isMounted = true; // Track if component is mounted
+    let isMounted = true;
 
     const loadData = async () => {
       if (currentUserDetails) {
@@ -92,6 +99,10 @@ const DashboardScreen = () => {
     }
   };
 
+  const handleFabClick = () => {
+    navigation.navigate("AdminChat", { student: null });
+  };
+
   return (
     <View style={DashboardScreenStyles.scrollContainer}>
       {!isAppAdmin && (
@@ -112,6 +123,24 @@ const DashboardScreen = () => {
           </View>
         )}
       </View>
+
+      {isAppAdmin && (
+        <TouchableOpacity
+          style={DashboardScreenStyles.fab}
+          onPress={handleFabClick}
+        >
+          <Icon
+            name="chatbubble-outline"
+            size={30}
+            color={theme.colors.white}
+          />
+          {newMessageCount > 0 && (
+            <View style={FabStyles.badge}>
+              <Text style={FabStyles.badgeText}>{newMessageCount}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      )}
     </View>
   );
 };

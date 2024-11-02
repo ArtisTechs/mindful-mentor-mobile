@@ -4,6 +4,8 @@ import SockJS from "sockjs-client";
 import axios from "axios";
 import { API_URL } from "../enum";
 import { getTokenAsync } from "./global-services";
+import { formatDate } from "./date-services";
+import { DateFormat } from "../enum/date-format.enum";
 
 // Construct the WebSocket URL
 const protocol = API_URL.BASE_URL.startsWith("https") ? "https" : "http";
@@ -189,12 +191,12 @@ export const combineMessagesBySender = (messages, students) => {
 
   // Now combine with student data by comparing senderId with student.id
   students.forEach((student) => {
-    const { id, Messages = [], latestDate, ...studentDetails } = student; 
+    const { id, Messages = [], latestDate, ...studentDetails } = student;
 
     if (combinedMessages[id]) {
       combinedMessages[id].Messages = [
         ...combinedMessages[id].Messages,
-        ...(Array.isArray(Messages) ? Messages : []), 
+        ...(Array.isArray(Messages) ? Messages : []),
       ];
 
       // Update the latest date if the student's latestDate is more recent
@@ -213,17 +215,69 @@ export const combineMessagesBySender = (messages, students) => {
     } else {
       // If no matching senderId in combinedMessages, add the student's data along with their messages
       combinedMessages[id] = {
-        senderId: id, 
-        Messages: Array.isArray(Messages) ? [...Messages] : [], 
+        senderId: id,
+        Messages: Array.isArray(Messages) ? [...Messages] : [],
         latestDate,
-        ...studentDetails, 
-        id, 
+        ...studentDetails,
+        id,
       };
     }
   });
 
   return Object.values(combinedMessages);
 };
+
+export async function getMessagesForReceiver(receiverId, isFetched) {
+  try {
+    const storedToken = await getTokenAsync();
+    if (!storedToken) {
+      throw new Error("No token found");
+    }
+
+    // Calculate the time range
+    const now = new Date();
+    const getStartTime = new Date(now.getTime() - 10 * 60 * 60 * 1000);
+    const getEndTime = new Date(now.getTime() + 10 * 60 * 60 * 1000);
+
+    // Format the dates
+    const formattedStartDate = formatDate(
+      isFetched ? now : getStartTime,
+      DateFormat.YYYY_MM_DD_HH_MM_SS
+    );
+    const formattedEndDate = formatDate(
+      getEndTime,
+      DateFormat.YYYY_MM_DD_HH_MM_SS
+    );
+
+    // Construct the URL with query parameters
+    const url = `${protocol}:${API_URL.MAIN_URL}${API_URL.MESSAGES}${
+      API_URL.RECEIVER
+    }/${receiverId}?startDate=${encodeURIComponent(
+      formattedStartDate
+    )}&endDate=${encodeURIComponent(formattedEndDate)}`;
+
+    // Make the API request using fetch
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${storedToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    // Check if the response is successful
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    } else {
+      console.error("Failed to fetch messages. Status code:", response.status);
+      return [];
+    }
+  } catch (error) {
+    console.log("Error fetching message history:", error);
+    return [];
+  }
+}
 
 export const removeMessagesBySenderId = (messages, senderIdToRemove) => {
   return messages.filter((message) => message.senderId !== senderIdToRemove);

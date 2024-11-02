@@ -33,10 +33,11 @@ import ButtonStyles from "../../shared/styles/button-styles";
 import { Icon } from "react-native-elements";
 import permissionServices from "../../shared/services/permission-services";
 import { launchImageLibraryAsync } from "expo-image-picker";
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const ProfileScreen = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { student } = route.params || {};
   const { currentUserDetails, isAppAdmin, setCurrentUserDetails } =
     useGlobalContext();
@@ -252,6 +253,14 @@ const ProfileScreen = () => {
     setFormData((prev) => ({ ...prev, profilePicture: null }));
   };
 
+  const handleBackButtonClick = () => {
+    setFormData(currentUserDetails);
+    setProfile(currentUserDetails);
+    setIsEditing((prev) => !prev);
+    navigation.setParams({ student: null });
+    navigation.goBack();
+  };
+
   const handleEditClick = () => {
     setIsEditing((prev) => !prev);
   };
@@ -285,7 +294,17 @@ const ProfileScreen = () => {
         )}
       </View>
       <View style={ProfileScreenStyles.profileContainer}>
-        <View style={ProfileScreenStyles.profileHeader}></View>
+        <View style={ProfileScreenStyles.profileHeader}>
+          {student ? (
+            <TouchableOpacity
+              style={ProfileScreenStyles.backButton}
+              onPress={handleBackButtonClick}
+            >
+              <Icon name="arrow-back" size={24} color="black" />
+              <Text style={ProfileScreenStyles.backButtonText}>Back</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
 
         {isEditing ? (
           <View style={ProfileScreenStyles.profileDetailsEdit}>
@@ -452,15 +471,6 @@ const ProfileScreen = () => {
             <Text style={ProfileScreenStyles.textValue}>
               {profile.phoneNumber || "N/A"}
             </Text>
-
-            {(isAppAdmin && student) || (!isAppAdmin && !student) ? (
-              <>
-                <Text style={ProfileScreenStyles.textLabel}>Counselor</Text>
-                <Text style={ProfileScreenStyles.textValue}>
-                  {profile.counselor || "N/A"}
-                </Text>
-              </>
-            ) : null}
           </View>
         )}
         <View style={ButtonStyles.buttonContainerRow}>

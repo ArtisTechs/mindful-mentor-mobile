@@ -12,10 +12,12 @@ import {
   useGlobalContext,
 } from "../../shared";
 import StudentList from "../../components/listing/student-list/StudentList";
+import useMessageService from "../../shared/services/get-message-service";
 
 const AdminViewChatList = () => {
   const navigation = useNavigation();
   const { currentUserDetails } = useGlobalContext();
+  const { adminMessages, newMessageCount } = useMessageService();
   const [students, setStudents] = useState([]);
   const [formattedStudentsData, setFormattedStudentsData] = useState([]);
 
@@ -27,11 +29,11 @@ const AdminViewChatList = () => {
 
   useEffect(() => {
     if (students.length > 0) {
-      const combinedMessages = combineMessagesBySender([], students);
+      const combinedMessages = combineMessagesBySender(adminMessages, students);
       const arrangedStudents = sortByLatestDateOrLastName(combinedMessages);
       setFormattedStudentsData(arrangedStudents);
     }
-  }, [students]);
+  }, [students, adminMessages]);
 
   const loadStudents = async () => {
     loadingService.show();

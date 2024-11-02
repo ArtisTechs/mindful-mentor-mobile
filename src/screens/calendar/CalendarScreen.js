@@ -28,6 +28,12 @@ const CalendarScreen = () => {
   const [selectedStudent, setSelectedStudent] = useState(() => student || null);
 
   useEffect(() => {
+    if (student) {
+      setSelectedStudent(student);
+    }
+  }, [student]);
+  
+  useEffect(() => {
     if (currentUserDetails?.id && dateRange?.startDate && dateRange?.endDate) {
       const fetchMoods = async () => {
         try {

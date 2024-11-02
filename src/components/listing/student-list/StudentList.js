@@ -99,9 +99,13 @@ const StudentList = ({
     toggleMenu(student.id);
     switch (action) {
       case "calendar":
+        navigation.navigate("Calendar", { student });
         break;
       case "chat":
-        // Handle Chat navigation
+        navigation.navigate("AdminChat", {
+          screen: "AdminChatView",
+          params: { student },
+        });
         break;
       case "profile":
         navigation.navigate("AdminProfile", { student });
@@ -252,6 +256,13 @@ const StudentList = ({
                   )}
                 </View>
               </View>
+              {student?.Messages?.length > 0 && (
+                <View style={styles.messageCount}>
+                  <Text style={styles.messageCountText}>
+                    {student.Messages.length}
+                  </Text>
+                </View>
+              )}
               {/* Options and Emotion Icons */}
               {!hideOptions && !isRequest && (
                 <Menu
@@ -448,6 +459,20 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
   },
   approveButtonText: { color: "black" },
+  messageCount: {
+    position: "absolute",
+    right: 16,
+    top: 16,
+    backgroundColor: theme.colors.danger,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  messageCountText: {
+    color: "white",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
 });
 
 export default StudentList;

@@ -23,9 +23,8 @@ const ProfileScreenStyles = StyleSheet.create({
   },
   profileHeader: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
+    justifyContent: "start",
+    marginBottom: 30,
   },
   profileDetailsEdit: {
     marginTop: 16,
@@ -90,6 +89,18 @@ const ProfileScreenStyles = StyleSheet.create({
   },
   avatar: {
     marginRight: 12,
+  },
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    position: "absolute",
+    left: -15,
+    top: -15,
+  },
+  backButtonText: {
+    fontSize: 16,
+    marginLeft: 5,
   },
 });
 
