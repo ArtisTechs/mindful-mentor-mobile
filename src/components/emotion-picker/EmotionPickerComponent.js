@@ -32,42 +32,45 @@ const EmotionPicker = () => {
 
   const getTodayDate = () => {
     const today = new Date();
-    return today.toISOString().split("T")[0];
+    const adjustedDate = new Date(
+      today.getTime() - today.getTimezoneOffset() * 60000
+    );
+    return adjustedDate.toISOString().split("T")[0];
   };
 
- useEffect(() => {
-   // Only fetch mood if currentUserDetails exists
-   if (currentUserDetails) {
-     const fetchUserMood = async () => {
-       const today = getTodayDate();
-       try {
-         const moods = await getMoods({
-           userId: currentUserDetails?.id,
-           startDate: today,
-           endDate: today,
-         });
+  useEffect(() => {
+    // Only fetch mood if currentUserDetails exists
+    if (currentUserDetails) {
+      const fetchUserMood = async () => {
+        const today = getTodayDate();
+        try {
+          const moods = await getMoods({
+            userId: currentUserDetails?.id,
+            startDate: today,
+            endDate: today,
+          });
 
-         if (moods.length > 0) {
-           const todayMood = moods[0];
-           setSelectedEmotion(todayMood.mood.description);
-           setTodayMoodId(todayMood.id);
-         } else {
-           // Reset mood state if no moods found
-           setSelectedEmotion(null);
-           setTodayMoodId(null);
-         }
-       } catch (error) {
-         toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
-       }
-     };
+          if (moods.length > 0) {
+            const todayMood = moods[0];
+            setSelectedEmotion(todayMood.mood.description);
+            setTodayMoodId(todayMood.id);
+          } else {
+            // Reset mood state if no moods found
+            setSelectedEmotion(null);
+            setTodayMoodId(null);
+          }
+        } catch (error) {
+          toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
+        }
+      };
 
-     fetchUserMood();
-   } else {
-     // Reset mood state if user details are not present
-     setSelectedEmotion(null);
-     setTodayMoodId(null);
-   }
- }, [currentUserDetails]);
+      fetchUserMood();
+    } else {
+      // Reset mood state if user details are not present
+      setSelectedEmotion(null);
+      setTodayMoodId(null);
+    }
+  }, [currentUserDetails]);
 
   const handleEmotionClick = async (emotion) => {
     setSelectedEmotion(emotion.description);

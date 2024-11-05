@@ -31,7 +31,14 @@ import styles from "./AppointmentScreenStyles"; // Import the separated styles
 const AppointmentScreen = () => {
   const { currentUserDetails, isAppAdmin } = useGlobalContext();
   const [appointments, setAppointments] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date();
+    const adjustedToday = new Date(
+      today.getTime() - today.getTimezoneOffset() * 60000
+    );
+    return adjustedToday;
+  });
+
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(true);
@@ -65,12 +72,15 @@ const AppointmentScreen = () => {
 
   const loadAppointments = async () => {
     setLoading(true);
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date();
+    const adjustedToday = new Date(
+      today.getTime() - today.getTimezoneOffset() * 60000
+    );
     try {
       const response = await fetchAppointmentList({
         sortBy: "scheduledDate",
         sortDirection: "DSC",
-        startDate: today,
+        startDate: adjustedToday.toISOString().split("T")[0],
       });
       setAppointments(response.content);
     } catch (error) {

@@ -68,7 +68,7 @@ const AppointmentCardList = ({ appointments, isLoading, refetch }) => {
           );
           refetch();
         } catch (error) {
-          toastService.show(EErrorMessages.CONTACT_ADMIN, "danger-toast");
+          toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
         }
       },
       onCancel: () => {},

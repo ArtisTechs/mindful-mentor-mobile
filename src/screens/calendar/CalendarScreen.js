@@ -49,6 +49,7 @@ const CalendarScreen = () => {
           };
 
           const data = await getMoods(filters);
+          console.log(data);
           setMoodsData(data);
         } catch (error) {
           toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
@@ -78,7 +79,7 @@ const CalendarScreen = () => {
       });
       setStudents(response.content);
     } catch (error) {
-      toastService.show(EErrorMessages.CONTACT_ADMIN, "danger-toast");
+      toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
     } finally {
       setLoading(false);
     }
@@ -86,8 +87,24 @@ const CalendarScreen = () => {
 
   const onDateRangeChange = useCallback(
     (startDate, endDate) => {
-      const formattedStartDate = formatDate(startDate, DateFormat.YYYY_MM_DD);
-      const formattedEndDate = formatDate(endDate, DateFormat.YYYY_MM_DD);
+      // Create new Date objects to avoid modifying the original dates
+      const adjustedStartDate = new Date(startDate);
+      const adjustedEndDate = new Date(endDate);
+
+      // Subtract 1 day from startDate
+      adjustedStartDate.setDate(adjustedStartDate.getDate() - 1);
+      // Add 1 day to endDate
+      adjustedEndDate.setDate(adjustedEndDate.getDate() + 1);
+
+      // Format the adjusted dates
+      const formattedStartDate = formatDate(
+        adjustedStartDate,
+        DateFormat.YYYY_MM_DD
+      );
+      const formattedEndDate = formatDate(
+        adjustedEndDate,
+        DateFormat.YYYY_MM_DD
+      );
 
       if (
         formattedStartDate !== dateRange?.startDate ||
@@ -101,6 +118,7 @@ const CalendarScreen = () => {
     },
     [dateRange]
   );
+
 
   const handleSelectStudent = (studentId) => {
     const selected = students.find((student) => student.id === studentId);

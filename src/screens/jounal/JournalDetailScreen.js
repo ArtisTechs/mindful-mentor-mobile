@@ -32,7 +32,13 @@ const JournalDetailScreen = () => {
   const [formState, setFormState] = useState({
     title: "",
     message: "",
-    entryDate: new Date(),
+    entryDate: (() => {
+      const today = new Date();
+      const adjustedToday = new Date(
+        today.getTime() - today.getTimezoneOffset() * 60000
+      );
+      return adjustedToday;
+    })(),
   });
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -126,7 +132,7 @@ const JournalDetailScreen = () => {
       if (error?.data?.errorCode === "DATE_ALREADY_TAKEN") {
         setDateError(error?.data?.message);
       } else {
-        toastService.show(EErrorMessages.CONTACT_ADMIN, "danger-toast");
+        toastService.show(EErrorMessages.CONTACT_ADMIN, "error");
       }
     } finally {
       loadingService.hide();

@@ -92,7 +92,9 @@ const CalendarComponent = ({ data, onDateRangeChange }) => {
   };
 
   const getDayColor = (day) => {
-    const dateStr = day.toISOString().split("T")[0];
+    const dateStr = new Date(day.getTime() - day.getTimezoneOffset() * 60000)
+      .toISOString()
+      .split("T")[0];
     const entry = data.find((data) => data.date.startsWith(dateStr));
     if (entry) {
       switch (entry.mood.code) {
@@ -152,7 +154,11 @@ const CalendarComponent = ({ data, onDateRangeChange }) => {
 
     return days.map((day, index) => {
       if (day) {
-        const dateStr = day.toISOString().split("T")[0];
+        const dateStr = new Date(
+          day.getTime() - day.getTimezoneOffset() * 60000
+        )
+          .toISOString()
+          .split("T")[0];
         const entry = data.find((data) => data.date.startsWith(dateStr));
 
         return (
