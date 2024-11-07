@@ -107,6 +107,7 @@ const JournalDetailScreen = () => {
     }
 
     if (hasError) {
+       loadingService.hide();
       return;
     }
 
