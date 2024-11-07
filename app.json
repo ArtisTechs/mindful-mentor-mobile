@@ -27,7 +27,16 @@
       ],
       "package": "com.mindfulmentor.mobile"
     },
-    "assetBundlePatterns": ["assets/*"],
-    "platforms": ["android"]
+    "assetBundlePatterns": [
+      "assets/*"
+    ],
+    "platforms": [
+      "android"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "63784831-b5b3-49c6-b88b-f00407bb6291"
+      }
+    }
   }
 }
