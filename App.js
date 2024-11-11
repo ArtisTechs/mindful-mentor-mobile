@@ -331,19 +331,28 @@ function AppContent() {
 }
 
 const toastConfig = {
-  success: ({ text1 }) => (
+  success: ({ text1, hide }) => (
     <View style={ToastStyles.toastContainer}>
       <Text style={ToastStyles.toastText}>{text1}</Text>
+      <TouchableOpacity onPress={hide} style={ToastStyles.closeButton}>
+        <Icon name="close" size={20} color="#fff" />
+      </TouchableOpacity>
     </View>
   ),
-  error: ({ text1 }) => (
+  error: ({ text1, hide }) => (
     <View style={[ToastStyles.toastContainer, ToastStyles.errorContainer]}>
       <Text style={ToastStyles.toastText}>{text1}</Text>
+      <TouchableOpacity onPress={hide} style={ToastStyles.closeButton}>
+        <Icon name="close" size={20} color="#fff" />
+      </TouchableOpacity>
     </View>
   ),
-  info: ({ text1 }) => (
+  info: ({ text1, hide }) => (
     <View style={[ToastStyles.toastContainer, ToastStyles.infoContainer]}>
       <Text style={ToastStyles.toastText}>{text1}</Text>
+      <TouchableOpacity onPress={hide} style={ToastStyles.closeButton}>
+        <Icon name="close" size={20} color="#fff" />
+      </TouchableOpacity>
     </View>
   ),
 };
@@ -355,7 +364,8 @@ const ToastStyles = StyleSheet.create({
     borderRadius: 8,
     marginHorizontal: 20,
     alignItems: "center",
-    justifyContent: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
     maxWidth: "90%",
     alignSelf: "center",
     marginTop: 10,
@@ -370,8 +380,9 @@ const ToastStyles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     textAlign: "center",
-    flexWrap: "wrap",
-    width: "100%",
-    maxWidth: "100%",
+  },
+  closeButton: {
+    marginLeft: 10,
+    padding: 5,
   },
 });
