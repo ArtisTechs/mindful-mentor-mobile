@@ -370,6 +370,11 @@ const LoginScreen = ({ navigation, onLoginSuccess }) => {
                 onChangeText={(text) => handleChange("password", text)}
                 error={!!errors.password}
               />
+              {errors.password && (
+                <Text style={LoginScreenStyles.errorText}>
+                  {errors.password}
+                </Text>
+              )}
 
               <TextInput
                 label="Re-enter Password"
@@ -388,6 +393,11 @@ const LoginScreen = ({ navigation, onLoginSuccess }) => {
                   {errors.reEnterPassword}
                 </Text>
               )}
+              <Text style={LoginScreenStyles.validPasswordText}>
+                Password must include at least 8 characters, one uppercase
+                letter, one lowercase letter, one number, and one special
+                character.
+              </Text>
             </>
           )}
         </>

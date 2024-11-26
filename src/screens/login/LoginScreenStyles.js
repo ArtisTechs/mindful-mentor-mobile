@@ -53,6 +53,11 @@ const LoginScreenStyles = StyleSheet.create({
     borderRadius: 50,
     marginBottom: 5,
   },
+  validPasswordText: {
+    color: "gray",
+    fontSize: 12,
+    marginBottom: 15,
+  },
 });
 
 export default LoginScreenStyles;
