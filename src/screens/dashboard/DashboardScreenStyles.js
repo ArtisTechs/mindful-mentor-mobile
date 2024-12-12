@@ -45,6 +45,22 @@ const DashboardScreenStyles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 2,
   },
+  switchButton: {
+    backgroundColor: theme.colors.primary, // Primary color for the button
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 20, // Rounded corners
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center", // Center the button horizontally
+    marginBottom: 2
+  },
+
+  switchButtonText: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "black", // White text color for contrast
+  },
 });
 
 export default DashboardScreenStyles;

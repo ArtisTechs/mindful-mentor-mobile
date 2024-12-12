@@ -17,6 +17,7 @@ import theme from "../../shared/styles/theme";
 import FabStyles from "../../shared/styles/fab-styles";
 import { useNavigation } from "@react-navigation/native";
 import useMessageService from "../../shared/services/get-message-service";
+import BarGraphEmotion from "../../components/bar-graph-emotion/bar-graph-emotion";
 
 const DashboardScreen = () => {
   const navigation = useNavigation();
@@ -26,6 +27,7 @@ const DashboardScreen = () => {
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState([]);
   const [studentLoading, setStudentLoading] = useState(true);
+  const [showStudentList, setShowStudentList] = useState(true);
   useEffect(() => {
     let isMounted = true;
 
@@ -103,6 +105,10 @@ const DashboardScreen = () => {
     navigation.navigate("AdminChat", { student: null });
   };
 
+  const toggleView = () => {
+    setShowStudentList(!showStudentList); // Toggle between the views
+  };
+
   return (
     <View style={DashboardScreenStyles.scrollContainer}>
       {!isAppAdmin && (
@@ -115,11 +121,27 @@ const DashboardScreen = () => {
         <UpcomingEvents appointments={appointments} isAppAdmin={isAppAdmin} />
         {isAppAdmin && (
           <View style={DashboardScreenStyles.studentList}>
-            <StudentList
-              students={students}
-              loading={studentLoading}
-              hideDelete={true}
-            />
+            {/* Button to switch views */}
+            <TouchableOpacity
+              onPress={toggleView}
+              style={DashboardScreenStyles.switchButton}
+            >
+              <Text style={DashboardScreenStyles.switchButtonText}>
+                {showStudentList ? "View Bar Graph" : "View Student List"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Conditional rendering based on the current view */}
+            {showStudentList ? (
+              <StudentList
+                students={students}
+                loading={studentLoading}
+                hideDelete={true}
+                showEmotionFilter={true}
+              />
+            ) : (
+              <BarGraphEmotion students={students} />
+            )}
           </View>
         )}
       </View>

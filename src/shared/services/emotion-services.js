@@ -1,6 +1,13 @@
 import axios from "axios";
-import { API_URL } from "../enum";
+import { API_URL, emotionCode } from "../enum";
 import { getTokenAsync } from "./global-services";
+import JoyfulImage from "../../assets/img/Joyful.png";
+import MotivatedImage from "../../assets/img/Motivated.png";
+import CalmImage from "../../assets/img/Calm.png";
+import AnxiousImage from "../../assets/img/Anxious.png";
+import SadImage from "../../assets/img/Sad.png";
+import FrustratedImage from "../../assets/img/Frustrated.png";
+import logo from "../../assets/img/mindful-mentor-logo.png";
 
 const moodURL = `${API_URL.BASE_URL}${API_URL.MOODS}`;
 
@@ -102,5 +109,24 @@ export const getStudentsWithMoodToday = async (filters) => {
     return response.data;
   } catch (error) {
     throw error.response || error.message;
+  }
+};
+
+export const getEmotionImage = (code) => {
+  switch (code) {
+    case emotionCode.JOY.code:
+      return JoyfulImage; // Direct reference to the imported image
+    case emotionCode.MOTIVATED.code:
+      return MotivatedImage;
+    case emotionCode.CALM.code:
+      return CalmImage;
+    case emotionCode.ANXIOUS.code:
+      return AnxiousImage;
+    case emotionCode.SAD.code:
+      return SadImage;
+    case emotionCode.FRUSTRATED.code:
+      return FrustratedImage;
+    default:
+      return logo; // Make sure this is a valid import as well
   }
 };

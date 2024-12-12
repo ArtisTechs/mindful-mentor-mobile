@@ -8,13 +8,6 @@ import {
   StyleSheet,
 } from "react-native";
 import { Avatar, Button, Menu, Divider, IconButton } from "react-native-paper";
-import JoyfulImage from "../../../assets/img/Joyful.png";
-import MotivatedImage from "../../../assets/img/Motivated.png";
-import CalmImage from "../../../assets/img/Calm.png";
-import AnxiousImage from "../../../assets/img/Anxious.png";
-import SadImage from "../../../assets/img/Sad.png";
-import FrustratedImage from "../../../assets/img/Frustrated.png";
-import logo from "../../../assets/img/mindful-mentor-logo.png";
 import { Icon } from "react-native-elements";
 import {
   AccountStatusEnum,
@@ -22,31 +15,13 @@ import {
   deleteUser,
   EErrorMessages,
   emotionCode,
+  getEmotionImage,
   modalService,
   stringAvatar,
   toastService,
 } from "../../../shared";
 import theme from "../../../shared/styles/theme";
 import { useNavigation } from "@react-navigation/native";
-
-const getEmotionImage = (code) => {
-  switch (code) {
-    case emotionCode.JOY.code:
-      return JoyfulImage;
-    case emotionCode.MOTIVATED.code:
-      return MotivatedImage;
-    case emotionCode.CALM.code:
-      return CalmImage;
-    case emotionCode.ANXIOUS.code:
-      return AnxiousImage;
-    case emotionCode.SAD.code:
-      return SadImage;
-    case emotionCode.FRUSTRATED.code:
-      return FrustratedImage;
-    default:
-      return logo;
-  }
-};
 
 // Skeleton loader component
 const SkeletonLoader = () => (
@@ -70,6 +45,7 @@ const StudentList = ({
   isSelectedStudent,
   isRequest = false,
   refetch,
+  showEmotionFilter = false,
 }) => {
   const navigation = useNavigation();
   const [selectedStudent, setSelectedStudent] = useState(
@@ -77,12 +53,21 @@ const StudentList = ({
   );
   const hasInitialized = useRef(false);
   const [menuVisible, setMenuVisible] = useState(null);
+  const [filteredEmotion, setFilteredEmotion] = useState(null);
 
   useEffect(() => {
     if (!hasInitialized.current && students.length > 0 && onSelectStudent) {
       hasInitialized.current = true;
     }
   }, [students, onSelectStudent]);
+
+  const handleFilterClick = (code) => {
+    setFilteredEmotion((prev) => (prev === code ? null : code)); // Toggle filter
+  };
+
+  const filteredStudents = filteredEmotion
+    ? students.filter((student) => student.moodCode === filteredEmotion)
+    : students;
 
   const handleItemClick = (student) => {
     if (isItemClickable && onSelectStudent) {
@@ -189,16 +174,41 @@ const StudentList = ({
     <View style={styles.container}>
       {showHeader && <Text style={styles.header}>Students</Text>}
 
+      {showEmotionFilter && (
+        <View style={styles.emotionFilterContainer}>
+          {Object.values(emotionCode).map((emotion) => (
+            <TouchableOpacity
+              key={emotion.code}
+              style={[
+                styles.emotionIconContainer,
+                filteredEmotion === emotion.code && styles.selectedEmotion,
+              ]}
+              onPress={() => handleFilterClick(emotion.code)}
+            >
+              <Image
+                source={getEmotionImage(emotion.code)}
+                style={[
+                  styles.emotionIcon,
+                  filteredEmotion !== emotion.code && {
+                    filter: "grayscale(100%)",
+                  },
+                ]}
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
       {loading ? (
         Array.from({ length: 3 }).map((_, index) => (
           <SkeletonLoader key={index} />
         ))
-      ) : students && students.length > 0 ? (
+      ) : filteredStudents && filteredStudents.length > 0 ? (
         <ScrollView
           style={styles.scrollableList}
           contentContainerStyle={styles.studentList}
         >
-          {students.map((student) => (
+          {filteredStudents.map((student) => (
             <TouchableOpacity
               key={student.id}
               style={[
@@ -472,6 +482,18 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 12,
     fontWeight: "bold",
+  },
+  emotionFilterContainer: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-between",
+  },
+  emotionIconContainer: {
+    padding: 8,
+    borderRadius: 20,
+  },
+  selectedEmotion: {
+    backgroundColor: "#e0f7fa",
   },
 });
 
